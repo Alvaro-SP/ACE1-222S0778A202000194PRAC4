@@ -1,0 +1,2 @@
+# ACE1-222S0778A202000194PRAC4
+desarrollo de una aplicación en consola, utilizando programación a bajo nivel (lenguaje ensamblador), que tenga las funcionalidades de una calculadora que realice las siguientes operaciones: Suma Resta Multiplicación División Potenciación   Además de poder obtener los datos estadísticos de los números ingresados, por medio de archivo o directamente; estos serán: Media Mediana Moda Cantidad de números pares Cantidad de números impares Cantidad de numeros tipo Fibonacci Lucas
