@@ -92,7 +92,16 @@ println macro texto
     int 21h
     print saltolinea
 ENDM println
-
+; POSICIONAR CURSOR
+poscursor MACRO POSXTEMP, POSYTEMP
+    ; PUSHA
+    MOV AL, POSXTEMP
+    MOV POSX, AL
+    MOV AL, POSYTEMP
+    MOV POSY, AL
+    CALL poscursor_
+    ; POPA
+ENDM poscursor
 
             ;! ▀▀▀▀▀▀▀▀▀▀  REPORTES  ▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 concatenarHTML macro destino, fuente

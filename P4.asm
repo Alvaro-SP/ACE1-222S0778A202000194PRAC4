@@ -9,7 +9,7 @@ INCLUDE ARCHIVOS.inc
 .DATA
 
     ;*--------------------------  MIS_DATOS -----------------------------
-    tb1             DB   38,'BIENVENIDO A MI CALCULADORA !!!!!!'
+    tb1             DB   34,'HOLA! BIENVENIDO A MI CALCULADORA !!!!!!'
     tb2             DB   38,'Universidad de San Carlos de Guatemala'
     tb3             DB   22,'Facultad de Ingenieria'
     tb4             DB   30,'Escuela de Ciencias y Sistemas'
@@ -19,8 +19,8 @@ INCLUDE ARCHIVOS.inc
     pressenter      DB   24,'ENTER: Para continuar...'
     ;*--------------------------     MENU    -----------------------------
     tm1             DB   29,'------- MENU PRINCIPAL ------'
-    tm2             DB   16,'1. Iniciar Juego'
-    tm3             DB   15,'2. Cargar Juego'
+    tm2             DB   14,'1. Calculadora'
+    tm3             DB   10,'2. Archivo'
     tm4             DB   8,'3. Salir'
     keypress          DB ?
     keypresstempY          DB ?
@@ -138,24 +138,6 @@ INCLUDE ARCHIVOS.inc
             RET
     main    ENDP
 
-    ;?☻ ===================== OPCIONES DEL MENU ======================= ☻
-    OPCIONDEMENU_ PROC NEAR
-        CMP keypress,'1'     ; si tecla es 1
-        JNE CARGARJUEGOTEMP     ; sino es 1 se va a cargar
-        JE INICIARJUEGO     ; SI SI ES SE VA A INICIARJUEGO
-
-        CARGARJUEGOTEMP:
-            CMP keypress,'2'  ; si tecla es 2
-            JNE SALIR ; sino es 2 se va a SALIR
-            JE CARGARJUEGO ; SI SI ES SE VA A CARGARJUEGO
-
-        CARGARJUEGO:
-            CARGADEJUEGOM
-        INICIARJUEGO:
-            INICIODEJUEGOM
-        SALIR:
-        RET
-    OPCIONDEMENU_ ENDP
     ;? ☻ ===================== METODO MOSTRAR DATOS ======================= ☻
     misdatos_     PROC NEAR
         MOV AX,4F02H           ;SETEAMOS EL MODO VIDEO INT 10   800*600
@@ -343,6 +325,36 @@ INCLUDE ARCHIVOS.inc
         ret
     convert endp
 
+    
+    ;?☻ ===================== OPCIONES DEL MENU ======================= ☻
+    OPCIONDEMENU_ PROC NEAR
+        CMP keypress,'1'     ; si tecla es 1
+        JNE CARGARJUEGOTEMP     ; sino es 1 se va a cargar
+        JE INICIARJUEGO     ; SI SI ES SE VA A INICIARJUEGO
+
+        CARGARJUEGOTEMP:
+            CMP keypress,'2'  ; si tecla es 2
+            JNE SALIR ; sino es 2 se va a SALIR
+            JE CARGARJUEGO ; SI SI ES SE VA A CARGARJUEGO
+
+        CARGARJUEGO:
+            limpiar
+            poscursor 10,15
+            print ingpath
+            poscursor 11, 10
+            getRuta file
+
+            openFile file, handler
+            readFile handler, matriz2, SIZEOF matriz2
+            cleanBuffer file,SIZEOF file,24h
+            closeFile handler
+            poscursor 15,15
+            print cargadoexito
+        INICIARJUEGO:
+            
+        SALIR:
+        RET
+    OPCIONDEMENU_ ENDP
     ;!  █▀█ █▀▀ █▀█ █▀█ █▀█ ▀█▀ █▀
     ;!  █▀▄ ██▄ █▀▀ █▄█ █▀▄ ░█░ ▄█
     ; * ☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻ GENERACION DE REPORTES
@@ -403,3 +415,10 @@ INCLUDE ARCHIVOS.inc
         RET
     GENERARHTML1_ ENDP
 
+end     MAIN
+;*  ░█████╗░██╗░░░░░██╗░░░██╗░█████╗░██████╗░░█████╗░    ░██████╗░█████╗░░█████╗░░█████╗░██████╗░
+;*  ██╔══██╗██║░░░░░██║░░░██║██╔══██╗██╔══██╗██╔══██╗    ██╔════╝██╔══██╗██╔══██╗██╔══██╗██╔══██╗
+;*  ███████║██║░░░░░╚██╗░██╔╝███████║██████╔╝██║░░██║    ╚█████╗░██║░░██║██║░░╚═╝██║░░██║██████╔╝
+;*  ██╔══██║██║░░░░░░╚████╔╝░██╔══██║██╔══██╗██║░░██║    ░╚═══██╗██║░░██║██║░░██╗██║░░██║██╔═══╝░
+;*  ██║░░██║███████╗░░╚██╔╝░░██║░░██║██║░░██║╚█████╔╝    ██████╔╝╚█████╔╝╚█████╔╝╚█████╔╝██║░░░░░
+;*  ╚═╝░░╚═╝╚══════╝░░░╚═╝░░░╚═╝░░╚═╝╚═╝░░╚═╝░╚════╝░    ╚═════╝░░╚════╝░░╚════╝░░╚════╝░╚═╝░░░░░
