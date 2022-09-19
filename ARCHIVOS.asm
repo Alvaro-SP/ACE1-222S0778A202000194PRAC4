@@ -4,19 +4,7 @@
 ; * ☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻  ARCHIVOS  ☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻
      
 
-cleanBuffer macro buffer,numBytes,caracter;?    limpiar un array
-; buffer = array de bytes
-; numBytes = numero de bytes a limpiar
-; caracter = caracter con el que se va a limpiar
-    LOCAL repeat 
-    mov si,0
-    mov cx,0
-    mov cx,numBytes
-    repeat:
-        mov buffer[si],caracter
-        inc si
-        loop repeat
-endm
+
 getChar macro
     mov ah, 01h
     int 21h
@@ -117,92 +105,19 @@ crear macro buffer, handler
     mov handler, ax ;sino hubo error nos devuelve el handler 
 
 endm
-
-; * ☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻ GENERACION DE REPORTES ☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻
-GENERARHTML1_ PROC NEAR
-    ; INICIODEJUEGOM
-    MOV SI_SIMULADO,0
-    MOV SI_SIMULADO2,0
-    ; xor si, si
-    ; ; cleanBuffer buffInfo, SIZEOF buffInfo, 24h
-    ; ; INICIODEJUEGOM
-    ; MOV SI_SIMULADO,si
-    ; MOV SI_SIMULADO2,si
-    ; mov si,0
-    ; mov cx,0
-    ; mov cx,SIZEOF buffInfo
-    ; repeat:
-    ;     mov buffer[si],"$"
-    ;     inc si
-    ;     loop repeat
-    getDate
-    getTime
-    concatenarHTML buffInfo, HEADHTM
-    concatenarHTML buffInfo, HEADHTM2
-    concatenarHTML buffInfo, LBLJUGADOR1
-
-    concatenarHTML buffInfo, txtfechayhora
-    concatenarHTML buffInfo, h1Time
-    concatenarHTML buffInfo, date
-    concatenarHTML buffInfo, time
-    concatenarHTML buffInfo, h1Time2
-
-
-    
-    concatenarHTML buffInfo, TXTLABELTOTALHTM
-
-    CONVERTNUMERO NUMDISPAROTOT1
-    concatenarHTML buffInfo,HANDTEMP
-
-    concatenarHTML buffInfo, TXTLABELTEMPORALFALLIDOSHTM
-    
-    CONVERTNUMERO NUMDISPAROFALL1
-    concatenarHTML buffInfo, HANDTEMP
-
-    concatenarHTML buffInfo, TXTLABELTEMPORALACERTADOSHTM
-    
-    CONVERTNUMERO NUMDISPAROBIEN1
-    concatenarHTML buffInfo, HANDTEMP
-
-    concatenarHTML buffInfo, TXTLABELTITULOJUGADOR
-    PAINTTABLEROSHOOTS1HTM
-
-    concatenarHTML buffInfo, TXTLABELTITULOBARCOS
-    PAINTTABLEROBARCOS1HTM
-    
-    concatenarHTML buffInfo, ENDT
-
-
-
-    concatenarHTML buffInfo, LBLJUGADOR2
-     concatenarHTML buffInfo, TXTLABELTOTALHTM
-
-    CONVERTNUMERO NUMDISPAROTOT2
-    concatenarHTML buffInfo,HANDTEMP
-
-    concatenarHTML buffInfo, TXTLABELTEMPORALFALLIDOSHTM
-    
-    CONVERTNUMERO NUMDISPAROFALL2
-    concatenarHTML buffInfo, HANDTEMP
-
-    concatenarHTML buffInfo, TXTLABELTEMPORALACERTADOSHTM
-    
-    CONVERTNUMERO NUMDISPAROBIEN2
-    concatenarHTML buffInfo, HANDTEMP
-
-    concatenarHTML buffInfo, TXTLABELTITULOJUGADOR
-    PAINTTABLEROSHOOTS2HTM
-
-    concatenarHTML buffInfo, TXTLABELTITULOBARCOS
-    PAINTTABLEROBARCOS2HTM
-    concatenarHTML buffInfo, FINHTM
-
-
-    crear Filenamejug1, handlerentrada
-    escribir  handlerentrada, buffInfo, SIZEOF buffInfo
-    cerrar handlerentrada
-    RET
-GENERARHTML1_ ENDP
+cleanBuffer macro buffer,numBytes,caracter;?    limpiar un array
+; buffer = array de bytes
+; numBytes = numero de bytes a limpiar
+; caracter = caracter con el que se va a limpiar
+    LOCAL repeat 
+    mov si,0
+    mov cx,0
+    mov cx,numBytes
+    repeat:
+        mov buffer[si],caracter
+        inc si
+        loop repeat
+endm
 
 ; * ☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻ FECHA Y HORA ☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻
 getTime macro
@@ -211,18 +126,18 @@ getTime macro
     ;hour
     mov al, ch
     call convert
-    mov time[0],ah
-    mov time[1],al
+    mov hour[0],ah
+    mov hour[1],al
     ;minutes
     mov al,cl
     call convert
-    mov time[3],ah
-    mov time[4],al
+    mov min[0],ah
+    mov min[1],al
     ;seconds
     mov al, dh
     call convert
-    mov time[6],ah
-    mov time[7],al
+    mov sec[0],ah
+    mov sec[1],al
 endm
 
 ;Macro para obtener la fecha actual del sistema
@@ -232,13 +147,13 @@ getDate macro
     ;day
     mov al, dl 
     call convert
-    mov date[0], ah
-    mov date[1], al
+    mov dia[0], ah
+    mov dia[1], al
     ;month
     mov al, dh
     call convert
-    mov date[3], ah
-    mov date[4], al
+    mov mes[0], ah
+    mov mes[1], al
     ;year
     ;mov year, cx
 endm

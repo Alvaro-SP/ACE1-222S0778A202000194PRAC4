@@ -47,6 +47,7 @@
 
 
     ;* --------------------------  REPORTES -----------------------------
+    Filenamejug1  db  'RepOP.xml'
     handlerentrada dw ?
     handlerentrada2 dw ?
     handler   dw ?
@@ -340,6 +341,8 @@
         ret
     convert endp
 
+    ;!  █▀█ █▀▀ █▀█ █▀█ █▀█ ▀█▀ █▀
+    ;!  █▀▄ ██▄ █▀▀ █▄█ █▀▄ ░█░ ▄█
     ; * ☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻ GENERACION DE REPORTES
     GENERARHTML1_ PROC NEAR
         MOV SI_SIMULADO,0
@@ -369,7 +372,6 @@
         concatenarHTML buffInfo, sec
         concatenarHTML buffInfo, segundocxml
         concatenarHTML buffInfo, tiempocxml
-        
         concatenarHTML buffInfo, estadisticosxml
         concatenarHTML buffInfo, mediaxml
 
@@ -384,11 +386,14 @@
 
         concatenarHTML buffInfo, fibonaccicxml
         concatenarHTML buffInfo, lucasxml
-        
+
         concatenarHTML buffInfo, lucascxml
         concatenarHTML buffInfo, estadisticoscxml
         ; concatenarHTML buffInfo, FINHTM
-
+        concatenarHTML buffInfo, operacionesxml
+        ;all the responses
+        concatenarHTML buffInfo, operacionescxml
+        concatenarHTML buffInfo, reportecxml
 
         crear Filenamejug1, handlerentrada
         escribir  handlerentrada, buffInfo, SIZEOF buffInfo
