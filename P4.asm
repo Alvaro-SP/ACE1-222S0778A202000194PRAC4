@@ -372,16 +372,21 @@
         
         concatenarHTML buffInfo, estadisticosxml
         concatenarHTML buffInfo, mediaxml
-        concatenarHTML buffInfo, medianaxml
-        concatenarHTML buffInfo, modaxml
-        concatenarHTML buffInfo, fibonaccixml
-        concatenarHTML buffInfo, lucasxml
-        concatenarHTML buffInfo, estadisticoscxml
+
         concatenarHTML buffInfo, mediacxml
+        concatenarHTML buffInfo, medianaxml
+
         concatenarHTML buffInfo, medianacxml
+        concatenarHTML buffInfo, modaxml
+
         concatenarHTML buffInfo, modacxml
+        concatenarHTML buffInfo, fibonaccixml
+
         concatenarHTML buffInfo, fibonaccicxml
+        concatenarHTML buffInfo, lucasxml
+        
         concatenarHTML buffInfo, lucascxml
+        concatenarHTML buffInfo, estadisticoscxml
         ; concatenarHTML buffInfo, FINHTM
 
 
