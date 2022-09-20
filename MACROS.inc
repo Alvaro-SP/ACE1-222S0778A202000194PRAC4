@@ -103,7 +103,7 @@ poscursor MACRO POSXTEMP, POSYTEMP
     ; POPA
 ENDM poscursor
 
-            ;! ▀▀▀▀▀▀▀▀▀▀  REPORTES  ▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+;! ▀▀▀▀▀▀▀▀▀▀  REPORTES  ▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 concatenarHTML macro destino, fuente
     LOCAL LeerCaracter,FinCadena
     PUSHA
@@ -123,7 +123,53 @@ concatenarHTML macro destino, fuente
     POPA
 endm concatenarHTML
 
+;* =======================ARRAYS=======================
+RESETNUMSTEMPS MACRO
+    MOV num1_fill, 0H       ;!RESETEO FLAGS DE NUMERO DERECHO
+    MOV num1_int, 0H
+    MOV num1_int_abs, 0H
+    MOV num1_dot, 0H
+    MOV num1_dot_, 0H
+    MOV num1_sign, 1H
+    MOV num1_pow, 1H
+    MOV num1_dot_detect, 0xFF
 
+    MOV num2_fill, 0H       ;!RESETEO FLAGS DE NUMERO IZQUIERDO
+    MOV num2_int, 0H
+    MOV num2_int_abs, 0H
+    MOV num2_dot, 0H
+    MOV num2_dot_, 0H
+    MOV num2_sign, 1H
+    MOV num2_pow, 1H
+    MOV num2_dot_detect, 0xFF  ;! NO fue necesario pero igual lo agrego
+    
+    MOV res_int, 0H;! Reset  FLAGS DE result
+    MOV res_int1, 0H
+    MOV res_dot, 0H
+    MOV res_pow, 1H
+    
+    ; Reset operator
+    MOV op, 0H   
+ENDM
+
+quitarespacios MACRO destino, auxiliar
+    LOCAL inicio,concat,SALIR,NOHAYESPACIOBLANCO
+    mov si, 0
+    mov di, 0
+    inicio:
+        cmp auxiliar[si], "$"
+        JNE concat
+        JE SALIR
+    concat:
+        cmp auxiliar[si],27 ;! osea si hay espacios en blanco no agregar
+        JNE NOHAYESPACIOBLANCO
+        JE inicio
+    NOHAYESPACIOBLANCO:
+        MOV AL, auxiliar[si]
+        MOV destino[di], AL
+        inc di
+    SALIR:
+ENDM
 
 
 
