@@ -4,7 +4,7 @@
 INCLUDE MACROS.inc
 INCLUDE ARCHIVOS.inc
 .MODEL LARGE
-.386
+
 .STACK 64
 .DATA
 
@@ -27,65 +27,58 @@ INCLUDE ARCHIVOS.inc
         tm3c             DB   '         2. Cargar Juego',10, 13, "$"
         tm4c             DB   '         3. Salir',10, 13, "$"
         CALCULADORATITLE DB     'CALCULADORA',10, 13, "$"
-    keypress          DB ?
-    keypresstempY          DB ?
-    keypresstempX          DB ?
-    ;*--------------------------  COLORES -----------------------------
-    BLACK               EQU  00H
-    ;*-------------------------- COORDENADAS PARA EL CURSOR --------------------------
-    POSX            DB  ?
-    POSY            DB  ?
-    saltolinea      DB " ",10, 13, "$"
-    ;*--------------------------  PARAMETROS DIBUJAR MODO VIDEO-----------------------------
-    X1              DW  ?
-    X2              DW  ?
-    Y1              DW  ?
-    Y2              DW  ?
-    KEY_PRESSED                     DB  ?
+    
+    ;*----------- COORDENADAS PARA EL CURSOR  PARAMETROS DIBUJAR MODO VIDEO-----------------------------
+        BLACK               EQU  00H
+        POSX            DB  ?
+        POSY            DB  ?
+        saltolinea      DB " ",10, 13, "$"
+        X1              DW  ?
+        X2              DW  ?
+        Y1              DW  ?
+        Y2              DW  ?
+        KEY_PRESSED                     DB  ?
+        keypress          DB ?
+        keypresstempY          DB ?
+        keypresstempX          DB ?
     ;*--------------------------  MENSAJES -----------------------------
-    ingpath db "Ingrese la ruta path del archivo:", 10, 13, "$"
-    textoprueba         DB "Textodeprueba","$"
-    EXITO db "EXITO. ARCHIVO GUARDADO CON EXITO CARPETA BIN", 10, 13, "$"
-    cargadoexito db "Cargado Exitosamente.", 10, 13, "$"
+        ingpath db "Ingrese la ruta path del archivo:", 10, 13, "$"
+        textoprueba         DB "Textodeprueba","$"
+        EXITO db "EXITO. ARCHIVO GUARDADO CON EXITO CARPETA BIN", 10, 13, "$"
+        cargadoexito db "Cargado Exitosamente.", 10, 13, "$"
 
     ;* --------------------------  PARA OPERACIONES -----------------------------
-    op              DB      0H ;! El operador
-    num1_int        DD      0H  ;! guarda los enteros
-    num1_int_abs    DD      0H  ;!
-    num1_dot        DW      0H;!guarda si hay un punto
-    num1_dot_       DW      0H;!
-    num1_fill       DB      0H ;!
-    num1_sign       DB      1H;! guarda si hay signo
-    num1_pow        DW      1H  ;! guarda si hay potencia
-    num1_dot_detect DB      0H
+        op              DB      0H ;! El operador
+        num1_int        DD      0H  ;! guarda los enteros
+        num1_int_abs    DD      0H  ;!
+        num1_dot        DW      0H;!guarda si hay un punto
+        num1_dot_       DW      0H;!
+        num1_fill       DB      0H ;!
+        num1_sign       DB      1H;! guarda si hay signo
+        num1_pow        DW      1H  ;! guarda si hay potencia
+        num1_dot_detect DB      0H
 
-    num2_int        DD      0H
-    num2_int_abs    DD      0H
-    num2_dot        DW      0H 
-    num2_dot_       DW      0H
-    num2_fill       DB      0H
-    num2_sign       DB      1H
-    num2_pow        DW      1H
-    num2_dot_detect DB      0H
+        num2_int        DD      0H
+        num2_int_abs    DD      0H
+        num2_dot        DW      0H 
+        num2_dot_       DW      0H
+        num2_fill       DB      0H
+        num2_sign       DB      1H
+        num2_pow        DW      1H
+        num2_dot_detect DB      0H
 
-    res_int         DD      0H  ;! resultado entero
-    res_int1        DD      0H  ;! resultado entero
-    res_dot         DW      0H  ;! resultado con punto decimal
-    res_pow         DW      1H  ;! resultado de potencia
+        res_int         DD      0H  ;! resultado entero
+        res_int1        DD      0H  ;! resultado entero
+        res_dot         DW      0H  ;! resultado con punto decimal
+        res_pow         DW      1H  ;! resultado de potencia
 
-    ten             DW      0AH
-    len             DW      0H
-    tmp             DD      ?   ;! TEMPORALES PARA LAS RESPUESTAS
-    tmp1            DD      ?
-    tmp2            DD      ?
-    tmp3            DD      ?
-    tmp4            DD      ?
-
-
-
-
-
-
+        ten             DW      0AH
+        len             DW      0H
+        tmp             DD      ?   ;! TEMPORALES PARA LAS RESPUESTAS
+        tmp1            DD      ?
+        tmp2            DD      ?
+        tmp3            DD      ?
+        tmp4            DD      ?
 
     ;* --------------------------  REPORTES -----------------------------
         Filenamejug1  db  'RepOP.xml'
@@ -178,7 +171,6 @@ INCLUDE ARCHIVOS.inc
             RET
     main    ENDP
 
-    
     ;?☻ ===================== CONCATENAR TEXTO ENTRADA ======================= ☻
     readtext_ PROC NEAR
         xor di , di
@@ -204,13 +196,6 @@ INCLUDE ARCHIVOS.inc
             inc di
             jmp Leer
         Salir:
-            cmp keypress[0], 53
-            JNE NOPASANADAOIGA
-            JE siesxd
-            siesxd:
-                poscursor 1,25
-                print textoprueba
-                JMP NOPASANADAOIGA
             ; ! ▓▓▓▓▓▓▓▓▓▓▓▓▒▒▒▒▒▒▒▒░░░░░░░░░ EN EL JUEGO  ░░░░░░░░░▒▒▒▒▒▒▒▒▓▓▓▓▓▓▓▓▓▓▓▓
             QUEINGRESO:
                     CMP keypress[0], "S"
@@ -289,22 +274,11 @@ INCLUDE ARCHIVOS.inc
                     JNE SHOWHTM
                     JE NOPASANADAOIGA  ;TODO: VER A DONDE VOY A MOSTRAR EL HTML
             SALIRAHORAYA:
-                ; JMP SALIDADEUNA
-        
+                ; JMP SALIDADEUN
         NOPASANADAOIGA:
         
         RET
     readtext_ ENDP
-    
-    
-
-
-    convert proc
-        aam
-        add ax, 3030h
-        ret
-    convert endp
-
     ;?☻ ===================== OPCIONES DEL MENU ======================= ☻
     OPCIONDEMENU_ PROC NEAR
         CMP keypress,'1'     ; si tecla es 1
@@ -507,7 +481,11 @@ INCLUDE ARCHIVOS.inc
         cerrar handlerentrada
         RET
     GENERARHTML1_ ENDP
-
+    convert proc
+        aam
+        add ax, 3030h
+        ret
+    convert endp
 end     MAIN
 ;*  ░█████╗░██╗░░░░░██╗░░░██╗░█████╗░██████╗░░█████╗░    ░██████╗░█████╗░░█████╗░░█████╗░██████╗░
 ;*  ██╔══██╗██║░░░░░██║░░░██║██╔══██╗██╔══██╗██╔══██╗    ██╔════╝██╔══██╗██╔══██╗██╔══██╗██╔══██╗
