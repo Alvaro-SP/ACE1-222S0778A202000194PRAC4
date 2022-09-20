@@ -171,5 +171,54 @@ quitarespacios MACRO destino, auxiliar
     SALIR:
 ENDM
 
-
+ANALIZARYCALCULAR MACRO                           ;? ▬▬▬ ENTER
+    PUSHA
+    CALL ANALIZARYCALCULAR_
+    POPA
+ENDM ANALIZARYCALCULAR
+SUMA MACRO NUMDERTEMP, NUMIZQTEMP                                                 ;? ▬▬▬ SUMA
+    PUSHA
+    MOV AX, NUMDERTEMP
+    MOV NUMDER, AX
+    MOV AX, NUMIZQTEMP
+    MOV NUMIZQ, AX
+    CALL SUMA_
+    POPA
+ENDM SUMA
+RESTA MACRO                                                  ;? ▬▬▬ RESTA
+    PUSHA
+    MOV AX, NUMDERTEMP
+    MOV NUMDER, AX
+    MOV AX, NUMIZQTEMP
+    MOV NUMIZQ, AX
+    CALL RESTA_
+    POPA
+ENDM RESTA
+MULTI MACRO                                                 ;? ▬▬▬ MULTI
+    PUSHA
+    MOV AX, NUMDERTEMP
+    MOV NUMDER, AX
+    MOV AX, NUMIZQTEMP
+    MOV NUMIZQ, AX
+    CALL MULTI_
+    POPA
+ENDM MULTI
+DIVI MACRO                                                  ;? ▬▬▬ DIVI
+    PUSHA
+    MOV AX, NUMDERTEMP
+    MOV NUMDER, AX
+    MOV AX, NUMIZQTEMP
+    MOV NUMIZQ, AX
+    CALL DIVI_
+    POPA
+ENDM DIVI
+POTENCIA MACRO                                              ;? ▬▬▬ POTENCIA
+    PUSHA
+    MOV AX, NUMDERTEMP
+    MOV NUMDER, AX
+    MOV AX, NUMIZQTEMP
+    MOV NUMIZQ, AX
+    CALL POTENCIA_
+    POPA
+ENDM POTENCIA
 

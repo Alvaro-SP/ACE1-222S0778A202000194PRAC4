@@ -27,7 +27,7 @@ INCLUDE ARCHIVOS.inc
         tm3c             DB   '         2. Cargar Juego',10, 13, "$"
         tm4c             DB   '         3. Salir',10, 13, "$"
         CALCULADORATITLE DB     'CALCULADORA',10, 13, "$"
-    
+        otroseparador   db  " >  ", "$"
     ;*----------- COORDENADAS PARA EL CURSOR  PARAMETROS DIBUJAR MODO VIDEO-----------------------------
         BLACK               EQU  00H
         POSX            DB  ?
@@ -46,7 +46,7 @@ INCLUDE ARCHIVOS.inc
         textoprueba         DB "Textodeprueba","$"
         EXITO db "EXITO. ARCHIVO GUARDADO CON EXITO CARPETA BIN", 10, 13, "$"
         cargadoexito db "Cargado Exitosamente.", 10, 13, "$"
-
+        lineaseparador db 223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223, 10, 13, "$"
     ;* --------------------------  PARA OPERACIONES -----------------------------
         op              DB      0H ;! El operador
         num1_int        DD      0H  ;! guarda los enteros
@@ -146,11 +146,13 @@ INCLUDE ARCHIVOS.inc
         MOV AX, @DATA
         MOV DS, AX
         MOV ES, AX
-        ; misdatos
-        ; esperaenter
-        ; paint  0, 0, 800, 600, BLACK ;*LIMPIA TODO MODO VIDEO:V
-        ; menu
-        ; esperaenter
+                                ; misdatos
+                                ; esperaenter  ;TODO: activar despues
+                                ; paint  0, 0, 800, 600, BLACK ;*LIMPIA TODO MODO VIDEO:V
+                                ; menu
+                                ; esperaenter
+        ANALIZARYCALCULAR
+        readtext
         limpiar
         readtext
         poscursor 6,22
@@ -197,85 +199,129 @@ INCLUDE ARCHIVOS.inc
             jmp Leer
         Salir:
             ; ! ▓▓▓▓▓▓▓▓▓▓▓▓▒▒▒▒▒▒▒▒░░░░░░░░░ EN EL JUEGO  ░░░░░░░░░▒▒▒▒▒▒▒▒▓▓▓▓▓▓▓▓▓▓▓▓
-            QUEINGRESO:
-                    CMP keypress[0], "S"
-                    JNE GUARDAR
-                    JE ESS
-                ESS:
-                    CMP keypress[1], "A"
-                    JNE GUARDAR
-                    JE ESA
-                ESA:
-                    CMP keypress[2], "L"
-                    JNE GUARDAR
-                    JE ESL
-                ESL:
-                    CMP keypress[3], "I"
-                    JNE GUARDAR
-                    JE ESIS
-                ESIS:
-                    CMP keypress[4], "R"
-                    JNE GUARDAR
-                    JE SALIRAHORAYA
-            GUARDAR:
-                    CMP keypress[0], "G"
-                    JNE SHOWHTM
-                    JE ESG2
-                ESG2:
-                    CMP keypress[1], "U"
-                    JNE SHOWHTM
-                    JE ESU2
-                ESU2:
-                    CMP keypress[2], "A"
-                    JNE SHOWHTM
-                    JE ESA21
-                ESA21:
-                    CMP keypress[3], "R"
-                    JNE SHOWHTM
-                    JE ESR21
-                ESR21:
-                    CMP keypress[4], "D"
-                    JNE SHOWHTM
-                    JE ESD2
-                ESD2:
-                    CMP keypress[5], "A"
-                    JNE SHOWHTM
-                    JE ESA22
-                ESA22:
-                    CMP keypress[6], "R"
-                    JNE SHOWHTM
-                    JE NOPASANADAOIGA  ;TODO: VER A DONDE VOY A GUARDAR
-            SHOWHTM:
-                    CMP keypress[0], "S"
-                    JNE NOPASANADAOIGA
-                    JE ESS3
-                ESS3:
-                    CMP keypress[1], "H"
-                    JNE NOPASANADAOIGA
-                    JE ESH3
-                ESH3:
-                    CMP keypress[2], "O"
-                    JNE NOPASANADAOIGA
-                    JE ES03
-                ES03:
-                    CMP keypress[3], "W"
-                    JNE NOPASANADAOIGA
-                    JE ESW3
-                ESW3:
-                    CMP keypress[4], "H"
-                    JNE NOPASANADAOIGA
-                    JE ESH33
-                ESH33:
-                    CMP keypress[5], "T"
-                    JNE NOPASANADAOIGA
-                    JE EST3
-                EST3:
-                    CMP keypress[6], "M"
-                    JNE SHOWHTM
-                    JE NOPASANADAOIGA  ;TODO: VER A DONDE VOY A MOSTRAR EL HTML
-            SALIRAHORAYA:
-                ; JMP SALIDADEUN
-        NOPASANADAOIGA:
+            ; ! ▓▓▓▓▓▓▓▓▓▓▓▓▒▒▒▒▒▒▒▒░░░░░░░░░ EN EL JUEGO  ░░░░░░░░░▒▒▒▒▒▒▒▒▓▓▓▓▓▓▓▓▓▓▓▓
+        QUEINGRESO:
+                CMP keypress[0], "S"
+                JNE GUARDAR
+                JE ESS
+            ESS:
+                CMP keypress[1], "A"
+                JNE GUARDAR
+                JE ESA
+            ESA:
+                CMP keypress[2], "L"
+                JNE GUARDAR
+                JE ESL
+            ESL:
+                CMP keypress[3], "I"
+                JNE GUARDAR
+                JE ESIS
+            ESIS:
+                CMP keypress[4], "R"
+                JNE GUARDAR
+                JE SALIRAHORAYA
+        GUARDARLISTO:
+            limpiar
+            poscursor 5, 15
+            print ingpath
+            getRuta file
+            crear file,handler
+            ; escribir handler,matriz2,SIZEOF matriz2 ;! GUARDO
+            ; seekEnd handler
+            ; escribir handler,matriz2,SIZEOF matriz2
+            ; seekEnd handler
+            ; escribir handler,barcos1,SIZEOF barcos1
+            ; seekEnd handler
+            ; escribir handler,barcos2,SIZEOF barcos2
+            
+            ; seekEnd handler
+            ; escribir handler,NUMDISPAROTOT1,SIZEOF NUMDISPAROTOT1
+
+            ; seekEnd handler
+            ; escribir handler,NUMDISPAROTOT2,SIZEOF NUMDISPAROTOT2
+
+            ; seekEnd handler
+            ; escribir handler,NUMDISPAROFALL1,SIZEOF NUMDISPAROFALL1
+
+            ; seekEnd handler
+            ; escribir handler,NUMDISPAROFALL2,SIZEOF NUMDISPAROFALL2
+
+            ; seekEnd handler
+            ; escribir handler,NUMDISPAROBIEN1,SIZEOF NUMDISPAROBIEN1
+
+            ; seekEnd handler
+            ; escribir handler,NUMDISPAROBIEN2,SIZEOF NUMDISPAROBIEN2
+
+
+            cerrar handler
+            poscursor 10,20
+            print EXITO
+            readtext
+            JMP NOPASANADAOIGA
+        
+        GUARDAR:
+                CMP keypress[0], "G"
+                JNE SHOWHTM
+                JE ESG2
+            ESG2:
+                CMP keypress[1], "U"
+                JNE SHOWHTM
+                JE ESU2
+            ESU2:
+                CMP keypress[2], "A"
+                JNE SHOWHTM
+                JE ESA21
+            ESA21:
+                CMP keypress[3], "R"
+                JNE SHOWHTM
+                JE ESR21
+            ESR21:
+                CMP keypress[4], "D"
+                JNE SHOWHTM
+                JE ESD2
+            ESD2:
+                CMP keypress[5], "A"
+                JNE SHOWHTM
+                JE ESA22
+            ESA22:
+                CMP keypress[6], "R"
+                JNE SHOWHTM
+                JE GUARDARLISTO  ;TODO: VER A DONDE VOY A GUARDAR
+        SHOWHTM:
+                CMP keypress[0], "S"
+                JNE NOPASANADAOIGA
+                JE ESS3
+            ESS3:
+                CMP keypress[1], "H"
+                JNE NOPASANADAOIGA
+                JE ESH3
+            ESH3:
+                CMP keypress[2], "O"
+                JNE NOPASANADAOIGA
+                JE ES03
+            ES03:
+                CMP keypress[3], "W"
+                JNE NOPASANADAOIGA
+                JE ESW3
+            ESW3:
+                CMP keypress[4], "H"
+                JNE NOPASANADAOIGA
+                JE ESH33
+            ESH33:
+                CMP keypress[5], "T"
+                JNE NOPASANADAOIGA
+                JE EST3
+            EST3:
+                CMP keypress[6], "M"
+                JNE NOPASANADAOIGA
+                JE MOSTRARHTM  ;TODO: VER A DONDE VOY A MOSTRAR EL HTML
+        SALIRAHORAYA:
+            ; JMP SALIDADEUNA
+            JMP NOPASANADAOIGA
+        MOSTRARHTM:
+            ; GENERARHTML1
+            GENERARHTML1
+    NOPASANADAOIGA:
         
         RET
     readtext_ ENDP
@@ -283,7 +329,7 @@ INCLUDE ARCHIVOS.inc
     OPCIONDEMENU_ PROC NEAR
         CMP keypress,'1'     ; si tecla es 1
         JNE CARGARXMLTEMP     ; sino es 1 se va a cargar
-        JE CALCULOSYA     ; SI SI ES SE VA A INICIARCALCULOS
+        JE CALCULOSIMPLE     ; SI SI ES SE VA A INICIARCALCULOS
         CARGARXMLTEMP:
             CMP keypress,'2'  ; si tecla es 2
             JNE SALIR ; sino es 2 se va a SALIR
@@ -301,19 +347,34 @@ INCLUDE ARCHIVOS.inc
             ; closeFile handler
             poscursor 15,15
             print cargadoexito
-        CALCULOSYA:
-            CALL CALCULOSIMPLE
+        CALCULOSIMPLE:
+            poscursor 1,30
+            print CALCULADORATITLE
+            print lineaseparador
+            print 62
+            print 32
+            readtext
+            ANALIZARYCALCULAR
+            JMP CALCULOSIMPLE
         SALIR:
         RET
     OPCIONDEMENU_ ENDP
     ;?☻ ===================== CALCULO SIMPLE ======================= ☻
-    CALCULOSIMPLE PROC NEAR
-        poscursor 1,20
-        print CALCULADORATITLE
+    ANALIZARYCALCULAR_ PROC NEAR
+        ;TODO algoritmo de COMPI 1
+        limpiar
+        poscursor 1,30
+            print CALCULADORATITLE
+            print lineaseparador
+            print otroseparador
+            readtext
         RET
-    CALCULOSIMPLE ENDP
+    ANALIZARYCALCULAR_ ENDP
 
-
+    ;?☻ ===================== SUMA ======================= ☻
+    ;?☻ ===================== RESTA ======================= ☻
+    ;?☻ ===================== MULTIPLICACION ======================= ☻
+    ;?☻ ===================== DIVISION ======================= ☻
 
 
 
