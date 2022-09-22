@@ -246,6 +246,13 @@ ESOP MACRO CHARS
     CALL ESOP_
     POPA
 ENDM ESOP
+ESOP2 MACRO CHARS
+    PUSHA
+    MOV AL, CHARS
+    MOV CHAR, AL
+    CALL ESOP2_
+    POPA
+ENDM ESOP2
 resetflagop MACRO CHAR
     MOV flagsuma, '0'
     MOV flagresta, '0'
