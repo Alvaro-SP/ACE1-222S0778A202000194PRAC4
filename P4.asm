@@ -1,11 +1,12 @@
 
 ;TODO █░█░█ █▀▀ █░░ █▀▀ █▀█ █▀▄▀█ █▀▀   █▀▄▀█ █▄█   █▀█ █▀█ ▄▀█ █▀▀ ▀█▀ █ █▀▀ █▀▀   █░█
 ;TODO ▀▄▀▄▀ ██▄ █▄▄ █▄▄ █▄█ █░▀░█ ██▄   █░▀░█ ░█░   █▀▀ █▀▄ █▀█ █▄▄ ░█░ █ █▄▄ ██▄   ▀▀█
+
 INCLUDE MACROS.inc
 INCLUDE ARCHIVOS.inc
 .MODEL LARGE
-
-.STACK 64
+.386
+.STACK 4096
 .DATA
 
     ;*--------------------------  MIS_DATOS -----------------------------
@@ -47,6 +48,9 @@ INCLUDE ARCHIVOS.inc
         EXITO db "EXITO. ARCHIVO GUARDADO CON EXITO CARPETA BIN", 10, 13, "$"
         cargadoexito db "Cargado Exitosamente.", 10, 13, "$"
         lineaseparador db 223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223,223, 10, 13, "$"
+        txtresult       DB 175,"  ", "$"
+        txtenter        DB 10, 13, "$"
+        txtminus        DB 45,"$"
     ;* --------------------------  PARA OPERACIONES -----------------------------
         op              DB      0H ;! El operador
         num1_int        DD      0H  ;! guarda los enteros
@@ -60,7 +64,7 @@ INCLUDE ARCHIVOS.inc
 
         num2_int        DD      0H
         num2_int_abs    DD      0H
-        num2_dot        DW      0H 
+        num2_dot        DW      0H
         num2_dot_       DW      0H
         num2_fill       DB      0H
         num2_sign       DB      1H
@@ -79,7 +83,39 @@ INCLUDE ARCHIVOS.inc
         tmp2            DD      ?
         tmp3            DD      ?
         tmp4            DD      ?
+        NUMIZQSIN       db ?
+        NUMDERSIN       db ?
+        NUMIZQ          dw 00h  ;! numero izquierdo ya parseado
+        NUMDER          dw 00h  ;! numero derecho ya parseado
+        NumerosUltimos  DW ?
+        ResultPosfijo   DW ?
+        NUMTEMP   DB ? ;! temporal de solo numero STRING
+        flagesnumero    DW  "0"
+        flagsuma        DW  "0"
+        flagresta        DW  "0"
+        flagmulti        DW  "0"
+        flagdivi        DW  "0"
+        flagOP        DW  "0"
+        flagOPAUX        DW  "0"
+        flagpot        DW  "0"
+        PARSEDNUM       DW ?
+        INDEXRPF        DW ?
+        overflow db 00h
+        RESULTADOPREVIO   DW 0,'$'
+        RESULTADOPRINT       dw 00h, '$'
+        NUMCONVERTEMP       db ?
+        CHAR       db ?
 
+        ;* almacenar los nombres de las operaciones
+        listNumbers         db 250 dup('$')
+        ;*almacenar los resultados de las operaciones
+        listValues          dw 250 dup('$')
+        ;*almacenar los VALORES PARA ESTADISTICOS
+        listestadistic          dw 800 dup('$')
+        INDEXlistestadistic     DW ?
+    ;* --------------------------  ESTADISTICOS -----------------------------
+    NUMESFIB DW ?
+    flagESFIBONACCI DB ?
     ;* --------------------------  REPORTES -----------------------------
         Filenamejug1  db  'RepOP.xml'
         handlerentrada dw ?
@@ -151,7 +187,14 @@ INCLUDE ARCHIVOS.inc
                                 ; paint  0, 0, 800, 600, BLACK ;*LIMPIA TODO MODO VIDEO:V
                                 ; menu
                                 ; esperaenter
-        ANALIZARYCALCULAR
+        limpiar
+        readtext
+                    MOV NUMTEMP[0],"2"
+                    MOV NUMTEMP[1],"$"
+                    intToString NUMTEMP, PARSEDNUM
+                    POTENCIA PARSEDNUM,PARSEDNUM
+                    printnum RESULTADOPRINT, RESULTADOPREVIO
+                    print RESULTADOPRINT
         readtext
         limpiar
         readtext
@@ -221,11 +264,11 @@ INCLUDE ARCHIVOS.inc
                 JNE GUARDAR
                 JE SALIRAHORAYA
         GUARDARLISTO:
-            limpiar
-            poscursor 5, 15
-            print ingpath
-            getRuta file
-            crear file,handler
+            ; limpiar
+            ; poscursor 5, 15
+            ; print ingpath
+            ; getRuta file
+            ; crear file,handler
             ; escribir handler,matriz2,SIZEOF matriz2 ;! GUARDO
             ; seekEnd handler
             ; escribir handler,matriz2,SIZEOF matriz2
@@ -253,10 +296,10 @@ INCLUDE ARCHIVOS.inc
             ; escribir handler,NUMDISPAROBIEN2,SIZEOF NUMDISPAROBIEN2
 
 
-            cerrar handler
-            poscursor 10,20
-            print EXITO
-            readtext
+            ; cerrar handler
+            ; poscursor 10,20
+            ; print EXITO
+            ; readtext
             JMP NOPASANADAOIGA
         
         GUARDAR:
@@ -321,8 +364,7 @@ INCLUDE ARCHIVOS.inc
         MOSTRARHTM:
             ; GENERARHTML1
             GENERARHTML1
-    NOPASANADAOIGA:
-        
+        NOPASANADAOIGA:
         RET
     readtext_ ENDP
     ;?☻ ===================== OPCIONES DEL MENU ======================= ☻
@@ -348,11 +390,11 @@ INCLUDE ARCHIVOS.inc
             poscursor 15,15
             print cargadoexito
         CALCULOSIMPLE:
-            poscursor 1,30
+            ; limpiar
+            ; poscursor 1,30
             print CALCULADORATITLE
             print lineaseparador
-            print 62
-            print 32
+            print otroseparador
             readtext
             ANALIZARYCALCULAR
             JMP CALCULOSIMPLE
@@ -361,38 +403,664 @@ INCLUDE ARCHIVOS.inc
     OPCIONDEMENU_ ENDP
     ;?☻ ===================== CALCULO SIMPLE ======================= ☻
     ANALIZARYCALCULAR_ PROC NEAR
-        ;TODO algoritmo de COMPI 1
-        limpiar
-        poscursor 1,30
-            print CALCULADORATITLE
-            print lineaseparador
-            print otroseparador
-            readtext
+        MOV DI, 0 ;inicializo contador
+        MOV BX, 0 ;inicializo contador 2
+        MOV ax, '$'
+        push ax
+        ; MOV AH, keypress[DI]
+        ; push AH ;? METO AL FONDO DE LA PILA EL CARACTER $
+        ; ! agrego de NumerosUltimos a ResultPosfijo
+        INICIO:
+            cmp keypress[DI], "$"
+            JE CALCULARHOYSI
+            ESNUMERO keypress[DI] ;*es un numero?
+            cmp flagesnumero, '1'
+            JNE NOESNUMERO
+            JE SIESNUMERO
+            SIESNUMERO:
+                MOV flagesnumero, '0'  ;*regreso a 0 el flag
+                MOV AH, keypress[DI]
+                MOV NUMTEMP[BX], AH    ;* paso a numtemp el char que es numero
+                INC BX
+                ESNUMERO keypress[DI+1] ;*es un numero el siguiente?
+                cmp flagesnumero, '1'
+                JNE NOESNUMERONEXT
+                JE SIESNUMERONEXT
+                SIESNUMERONEXT:
+                    INC DI      ;! siguiente posicion
+                    JMP SIESNUMERO
+                NOESNUMERONEXT:
+                    MOV NUMTEMP[BX],'$'
+                    ;! entonces guardo el numero que ya tengo y sigo
+                    ;! NEcesito primero PARSEAR
+                    parser
+                    MOV AX, PARSEDNUM
+                    push AX ;? METO A LA PILA EL CARACTER DE PARSEDNUM
+                    JMP SIGUIENTE
+            NOESNUMERO:
+                ESUNOPERADOR:
+                    ESOP keypress[DI] ;*es un operador?
+                    cmp flagsuma, '1'
+                    JE GUARDOOPSUM
+                    cmp flagresta, '1'
+                    JE GUARDOOPRESTA
+                    cmp flagmulti, '1'
+                    JE GUARDOOPMULTI
+                    cmp flagdivi, '1'
+                    JE GUARDOOPDIVI
+                    cmp flagpot, '1'
+                    JNE PARENTESISABRE
+                    JE GUARDOOPPOT
+                    GUARDOOPSUM:
+                        MOV AX, 43
+                        push AX ;? METO A LA PILA EL CARACTER DE +
+                        resetflagop
+                        JMP SIGUIENTE
+                    GUARDOOPRESTA:
+                        MOV AX, 45
+                        push AX ;? METO A LA PILA EL CARACTER DE -
+                        resetflagop
+                        JMP SIGUIENTE
+                    GUARDOOPMULTI:
+                        MOV AX, 42
+                        push AX ;? METO A LA PILA EL CARACTER DE *
+                        resetflagop
+                        JMP SIGUIENTE
+                    GUARDOOPDIVI:
+                        MOV AX, 47
+                        push AX ;? METO A LA PILA EL CARACTER DE /
+                        resetflagop
+                        JMP SIGUIENTE
+                    GUARDOOPPOT:
+                        MOV AX, 94
+                        push AX ;? METO A LA PILA EL CARACTER DE ^
+                        resetflagop
+                        JMP SIGUIENTE
+
+                PARENTESISABRE:
+                    cmp keypress[DI],40
+                    JNE PARENTESISCIERRA
+                    JE GUARDAPARA
+                    GUARDAPARA:
+                        ;! GUARDO EL PARENTESIS EN  LA PILITA PREVIA
+                        MOV AX, 40
+                        push AX ;? METO A LA PILA EL CARACTER DE (
+                        JMP SIGUIENTE
+                PARENTESISCIERRA:
+                    cmp keypress[DI],41
+                    JNE SIGUIENTE
+                    JE GUARDAPARC
+                    GUARDAPARC:
+                        ;! GUARDO EL PARENTESIS EN LA PILITA PREVIA
+                        MOV AX, 41
+                        push AX ;? METO A LA PILA EL CARACTER DE )
+                        JMP SIGUIENTE
+                SIGUIENTE:
+                    INC DI      ;! siguiente posicion
+                    JMP INICIO
+
+            ;! ORDENO
+        CALCULARHOYSI:
+        ;! SI OPERO (5+5)*-3 tengo pila ==>  top: 3,-,*,),5,+,+,(,$ :fondo
+            MOV DI, 0
+            REORDENO:
+                pop CX
+                cmp CX, '$'
+                JNE SINOESFONDO
+                JE SIESFONDO
+                SINOESFONDO:
+                    MOV NumerosUltimos[DI], CX
+                    INC DI
+                    JMP REORDENO
+                SIESFONDO: ;simplemente termine con la cadena y ya esta ordenada
+                    MOV AX, '$'
+                    MOV NumerosUltimos[DI], AX
+                    JMP INICIOALGORITMOCOMPI
+
+            ;! INICIO EL ALGORITMO FULL DE LA TABLA DE COMPI 1
+        INICIOALGORITMOCOMPI:
+            ;! RECORRO OTRA VEZ TODO :
+            MOV DI,0 ; * PARA NUMEROSULTIMOS
+            MOV SI,0 ; * PARA RESULTPOSFIJO
+
+            RECORROALL:
+                cmp NumerosUltimos[DI], "$"
+                JE EJECUTARPOSFIJO
+                ;! de NUMEROSULTIMOS debo agregar a RESULTPOSFIJO
+                CLASIFYDIGITS NumerosUltimos[DI]
+                CMP flagOPAux, '4'
+                JE SIESOPERANDO
+                CMP flagOPAux, '3'
+                JE ESPARENTESISPREC
+                CMP flagOPAux, '2'
+                JE ESPRECEDENCIA2
+                CMP flagOPAux, '1'
+                JE ESPRECEDENCIA1
+                ;! agrego los signos al fondo de la pila
+                    ;! Pero con restricciones:
+                SIESOPERANDO:
+                    JMP AGREGARPOSFIJO
+                ESPARENTESISPREC:
+                    cmp flagOP, '0' ; porque es el primer operando
+                    JE APILOOP
+                    cmp NumerosUltimos[DI], 40
+                    JE ESPARENTESISQUEABRE
+                    cmp NumerosUltimos[DI], 41
+                    JE ESPARENTESISQUECIERRA
+                    ESPARENTESISQUEABRE:
+                        JMP APILOOP
+                    ESPARENTESISQUECIERRA:
+                        ;! PASO A RESULTPOSFIJO HASTA HALLAR (
+                        pop AX
+                        CMP AX, 40
+                        JNE pasoaresultlodepila
+                        JE PAROYA
+                        PAROYA:
+                            INC DI
+                            POP AX ;* SACO EL QUE ESTA ANTES DEL PARENTESIS
+                            cmp AX, '$'
+                            JNE nohallegadotopedepila
+                            JE llegoaltopedepila
+                            nohallegadotopedepila:
+                                CLASIFYDIGITS AX
+                                MOV DX, flagOPAux
+                                MOV flagOP, DX
+                                PUSH ax
+                                JMP RECORROALL
+                            llegoaltopedepila:
+                                MOV flagOP, '0'
+                                JMP RECORROALL
+                            CLASIFYDIGITS AX
+                            MOV DX, flagOPAux
+                            MOV flagOP, DX ; ! PA SABER QUE HAY EN BORDE
+                            PUSH AX
+                            JMP RECORROALL
+                        pasoaresultlodepila:
+                            MOV ResultPosfijo[SI], AX
+                            INC SI
+
+
+
+                ESPRECEDENCIA2:
+                    cmp flagOP, '0' ; porque es el primer operando
+                    JE APILOOP
+                    ;! SE PRECEDENCIA ES MAYOR DEL QUE ESTA EN PILA
+                    ;! ENTONCES SE APILA EL OPERADOR ACTUAL
+                    cmp flagOP, '1'
+                    JE SIESMAYORPREC
+                    cmp flagOP, '2'
+                    JE ESIGUALPREC
+                    SIESMAYORPREC:
+                        JMP APILOOP
+                    
+                ESPRECEDENCIA1:
+                    cmp flagOP, '0' ; porque es el primer operando
+                    JE APILOOP
+                    ;! SE PRECEDENCIA ES MENOR DEL QUE ESTA EN PILA
+                    ;! ENTONCES SE PURGA LA CUMBRE DE LA PILA HASTA
+                    ;! QUE NO LO SEA
+                    cmp flagOP, '2'
+                    JE SIESMENORPREC
+                    cmp flagOP, '1'
+                    JE ESIGUALPREC
+
+                    SIESMENORPREC:
+                        POP AX
+                        MOV ResultPosfijo[SI], AX
+                        INC SI
+                        SIGUEYSIGUESIENDOMENOR:
+                            POP AX ; saco el siguiente valor de la pila
+                            CLASIFYDIGITS AX ; veo que tipo es
+                            CMP flagOPAux, '1'
+                            JNE YANOESMENOR
+                            JE SIGUESIENDOMENOR; si sigue siendo menor
+                            YANOESMENOR:
+                                PUSH AX ;* IMPORTANTE DEVOLVER EL VALOR A PILA
+                                INC DI    ; YA ME SALGO DE ESTA ITERACION
+                                POP AX
+                                CLASIFYDIGITS AX
+                                MOV DX, flagOPAux
+                                MOV flagOP, DX ; ! PA SABER QUE HAY EN BORDE
+                                PUSH AX
+                                JMP RECORROALL
+                            SIGUESIENDOMENOR:
+                                MOV ResultPosfijo[SI], AX
+                                INC SI
+                                JMP SIGUEYSIGUESIENDOMENOR
+                APILOOP:
+                    ;! SI ES PRIMER OPERANDO ENTONCES APILO
+                    MOV AX, NumerosUltimos[DI]
+                    push AX
+                    INC DI
+                    POP AX
+                    CLASIFYDIGITS AX
+                    MOV DX, flagOPAux
+                    MOV flagOP, DX
+                    PUSH AX
+                    JMP RECORROALL
+
+                ESIGUALPREC:
+                    ; ! SI ES IGUAL PRECEDENCIA PASO DE LA PILA
+                    ;! AL RESULTPOSFIJO
+                    pop AX
+                    MOV ResultPosfijo[SI], AX
+                    INC SI
+                    ;! Y AGREGO EL OPERADOR ACTUAL (AUX) A PILA
+                    MOV AX, NumerosUltimos[DI]
+                    push AX
+                    INC DI
+                    POP AX
+                    CLASIFYDIGITS AX
+                    MOV DX, flagOPAux
+                    MOV flagOP, DX
+                    PUSH AX
+                    JMP RECORROALL
+                AGREGARPOSFIJO:
+                    MOV AX, NumerosUltimos[DI]
+                    MOV ResultPosfijo[SI], AX ;? TODOS LOS NUMEROS LOS AGREGO A POSFIJO
+                    INC SI
+                    INC DI
+                    POP AX
+                    CLASIFYDIGITS AX
+                    MOV DX, flagOPAux
+                    MOV flagOP, DX
+                    PUSH AX
+                    JMP RECORROALL
+
+        ;! RECORRE Y EJECUTA LA CADENA EN POSFIJO.
+        EJECUTARPOSFIJO:
+            ;*teniendo ya la cadena en posfijo procedo a ejecutar 
+            ;* las operaciones
+            ;todo si tengo
+
+        SALIR:
         RET
-    ANALIZARYCALCULAR_ ENDP
+    ANALIZARYCALCULAR_ ENDP 
 
+    ;! I CAN USE AX FOR THE LEFT NUMBER
+    ;! I GONNA USE BX FOR THE RIGHT NUMBER
     ;?☻ ===================== SUMA ======================= ☻
+    SUMA_ PROC NEAR
+        MOV CX, NUMIZQ
+        MOV BX, NUMDER
+        MOV AX,CX   ;copy NUMIZQ to AX from CX
+        MOV DX,00h
+        ADD AX,BX   ;adding with NUMDER and guardo resultado en AX
+        ADC AX,DX   ;adding CF (carry) to AX guardo resultado en AX
+        MOV RESULTADOPREVIO, AX
+        RET
+    SUMA_ ENDP
     ;?☻ ===================== RESTA ======================= ☻
+    RESTA_ PROC NEAR
+        MOV CX, NUMIZQ
+        MOV BX, NUMDER
+        MOV AX,CX ;copy NUMIZQ to AX from CX
+        SUB AX,BX ;subtracting NUMDER from NUMIZQ and 
+        JC SOBREFLU; storing the result in AX 
+        JNC SALIR
+        SOBREFLU:
+            NEG AX
+            MOV overflow,01h
+            RET
+        SALIR:
+        MOV RESULTADOPREVIO, AX
+        RET
+    RESTA_ ENDP
     ;?☻ ===================== MULTIPLICACION ======================= ☻
+    MULTI_ PROC NEAR
+        MOV CX, NUMIZQ
+        MOV BX, NUMDER
+        MOV AX,CX           ;copy NUMIZQ to AX from CX
+        MOV DX,00H          ;moving 00h in DX
+        MUL BX              ;multiplying NUMIZQ by NUMDER and storing the result in AX
+        MOV RESULTADOPREVIO, AX
+        RET
+    MULTI_ ENDP
     ;?☻ ===================== DIVISION ======================= ☻
+    DIVI_ PROC NEAR
+        MOV CX, NUMIZQ
+        MOV BX, NUMDER
+        MOV AX,CX           ;copy NUMIZQ to AX from CX
+        MOV DX,00H          ;moving 00h in DX 
+        ADD BX,DX
+        DIV BX              ;dividing NUMIZQ by NUMDER and storing the result in AX
+        MOV RESULTADOPREVIO, AX
+        RET
+    DIVI_ ENDP
+    ;?☻ ===================== POTENCIA ======================= ☻
+    POTENCIA_ PROC NEAR
+        MOV CX, NUMIZQ
+        MOV BX, NUMDER
+        MOV AX,CX   ;copy NUMIZQ to AX from CX
+        MOV CX,BX   ;initializing CX with BX(NUMDER)
+        ADD CX,00h
+        JZ Lc
+        SUB CX,01h  ;CX=CX-1;
+        JZ SALIR    ;if CX = 0
+        JNZ Lb      ;if CX != 0
+        Lb:
+            MOV BX,AX
+            MOV DX,00h   ;moving 00h in DX
+        L1:
+            MUL BX   ;multiplying NUMIZQ by NUMIZQ and storing the result in AX
+            LOOP L1
+            JMP SALIR
+        Lc:
+            MOV AX,01h
+        SALIR:
+        MOV RESULTADOPREVIO, AX
+        RET
+    POTENCIA_ ENDP
+    ;?☻ ===================== PARSEO ======================= ☻
+    parser_ PROC NEAR
+        MOV CX, 01d
+        MOV BX, 00H
+        MOV SI,0
+        regreso:
+            MOV AX, 00h
+            MOV AL, NUMTEMP[SI] ;* lo que tengo en el segmento de datos
+            MUL CX
+            ADD BX,AX ;guardo la multiplicacion en BX
+            MOV AX,CX; PARA INCREMENTAR POSICION DECIMAL
+            INC SI; aumento posicion del numero STRING
+            CMP NUMTEMP[SI],"$"
+            JNE regreso ; sino ha llegado al final ...
+            ;si llega al final...
+            MOV PARSEDNUM,BX ;lo almaceno en direccion de parsednum
+        RET
+    parser_ ENDP
+
+    ESOP_ PROC NEAR
+        cmp CHAR, 42
+        JE ESMULTI1
+        cmp CHAR, 43
+        JE ESSUM1
+        cmp CHAR, 45
+        JE ESREST1
+        cmp CHAR, 47
+        JE ESDIVI1
+        cmp CHAR, 94
+        JE ESPOT1
+        
+        BUSCOSUM:
+            cmp NumerosUltimos[DI], 109
+            JNE BUSCOREST
+            JE BUSCOSUM1
+            BUSCOSUM1:
+                cmp NumerosUltimos[DI+1], 97
+                JNE BUSCOREST
+                JE BUSCOSUM2
+            BUSCOSUM2:
+                cmp NumerosUltimos[DI+2], 115
+                JNE BUSCOREST
+                JE ESSUM
+        BUSCOREST:
+            cmp NumerosUltimos[DI], 109
+            JNE BUSCOMULTI
+            JE BUSCOREST1
+            BUSCOREST1:
+                cmp NumerosUltimos[DI+1], 101
+                JNE BUSCOMULTI
+                JE BUSCOREST2
+            BUSCOREST2:
+                cmp NumerosUltimos[DI+2], 110
+                JNE BUSCOMULTI
+                JE BUSCOREST3
+            BUSCOREST3:
+                cmp NumerosUltimos[DI+3], 111
+                JNE BUSCOMULTI
+                JE BUSCOREST4
+            BUSCOREST4:
+                cmp NumerosUltimos[DI+4], 115
+                JNE BUSCOMULTI
+                JE ESREST
+        BUSCOMULTI:
+            cmp NumerosUltimos[DI], 112
+            JNE BUSCODIVI
+            JE BUSCOMULTI1
+            BUSCOMULTI1:
+                cmp NumerosUltimos[DI+1], 111
+                JNE BUSCODIVI
+                JE BUSCOMULTI2
+            BUSCOMULTI2:
+                cmp NumerosUltimos[DI+2], 114
+                JNE BUSCODIVI
+                JE ESDIVI
+        BUSCODIVI:
+            cmp NumerosUltimos[DI], 101
+            JE BUSCODIVI1
+            BUSCODIVI1:
+                cmp NumerosUltimos[DI+1], 110
+                JNE BUSCOPOT
+                JE BUSCODIVI2
+            BUSCODIVI2:
+                cmp NumerosUltimos[DI+2], 116
+                JNE BUSCOPOT
+                JE BUSCODIVI3
+            BUSCODIVI3:
+                cmp NumerosUltimos[DI+3], 114
+                JNE BUSCOPOT
+                JE BUSCODIVI4
+            BUSCODIVI4:
+                cmp NumerosUltimos[DI+4], 101
+                JNE BUSCOPOT
+                JE ESDIVI
+        BUSCOPOT:
+            cmp NumerosUltimos[DI], 112
+            JNE SALIR
+            JE BUSCOPOT1
+            BUSCOPOT1:
+                cmp NumerosUltimos[DI+1], 111
+                JNE SALIR
+                JE BUSCOPOT2
+            BUSCOPOT2:
+                cmp NumerosUltimos[DI+2], 116
+                JNE SALIR
+                JE BUSCOPOT3
+            BUSCOPOT3:
+                cmp NumerosUltimos[DI+3], 101
+                JNE SALIR
+                JE BUSCOPOT4
+            BUSCOPOT4:
+                cmp NumerosUltimos[DI+4], 110
+                JNE SALIR
+                JE BUSCOPOT5
+            BUSCOPOT5:
+                cmp NumerosUltimos[DI+5], 99
+                JNE SALIR
+                JE BUSCOPOT6
+            BUSCOPOT6:
+                cmp NumerosUltimos[DI+6], 105
+                JNE SALIR
+                JE BUSCOPOT7
+            BUSCOPOT7:
+                cmp NumerosUltimos[DI+7], 97
+                JNE SALIR
+                JE ESPOT
+        ESMULTI:
+            MOV flagmulti, '1'
+            INC DI
+            INC DI
+            JMP SALIR
+        ESSUM:
+            MOV flagsuma, '1'
+            INC DI
+            INC DI
+            JMP SALIR
+        ESREST:
+            INC DI
+            INC DI
+            INC DI
+            INC DI
+            MOV flagresta, '1'
+            JMP SALIR
+        ESDIVI:
+            INC DI
+            INC DI
+            INC DI
+            INC DI
+            MOV flagdivi, '1'
+            JMP SALIR
+        ESPOT:
+            INC DI
+            INC DI
+            INC DI
+            INC DI
+            INC DI
+            INC DI
+            INC DI
+            MOV flagpot, '1'
+            JMP SALIR
+
+        ESMULTI1:
+            MOV flagmulti, '1'
+            JMP SALIR
+        ESSUM1:
+            MOV flagsuma, '1'
+            JMP SALIR
+        ESREST1:
+            MOV flagresta, '1'
+            JMP SALIR
+        ESDIVI1:
+            MOV flagdivi, '1'
+            JMP SALIR
+        ESPOT1:
+            MOV flagpot, '1'
+            JMP SALIR
+        SALIR:
+        RET
+    ESOP_ ENDP
+    
+    CLASIFYDIGITS_ PROC NEAR
+        cmp CHAR, 40
+        JE ESPARA
+        cmp CHAR, 41
+        JE ESPARC
+        cmp CHAR, 42
+        JE ESMULTI1
+        cmp CHAR, 43
+        JE ESSUM1
+        cmp CHAR, 45
+        JE ESREST1
+        cmp CHAR, 47
+        JE ESDIVI1
+        cmp CHAR, 94 ;* SINO ES NINGUN SIMBOLO ES NUMERO A LEY XD
+        JNE ESNUMEROENTONCES
+        JE ESPOT1
+        ESPARA:
+            ; MOV flagmulti, '3'
+            MOV flagOPAux, "3"
+            JMP SALIR
+        ESPARC:
+            ; MOV flagmulti, '3'
+            MOV flagOPAux, "3"
+            JMP SALIR
+        ESMULTI1:
+            ; MOV flagmulti, '1'
+            MOV flagOPAux, "2"
+            JMP SALIR
+        ESSUM1:
+            ; MOV flagsuma, '1'
+            MOV flagOPAux, "1"
+            JMP SALIR
+        ESREST1:
+            ; MOV flagresta, '1'
+            MOV flagOPAux, "1"
+            JMP SALIR
+        ESDIVI1:
+            ; MOV flagdivi, '1'
+            MOV flagOPAux, "2"
+            JMP SALIR
+        ESPOT1:
+            ; MOV flagpot, '1'
+            MOV flagOPAux, "2"
+            JMP SALIR
+        ESNUMEROENTONCES:
+            MOV flagOPAux, '4'
+            JMP SALIR
+        SALIR:
+        RET
+    CLASIFYDIGITS_ ENDP
+
+    ESNUMERO_ PROC NEAR
+        cmp CHAR, 48
+        JE ESUNNUMERO
+        cmp CHAR, 49
+        JE ESUNNUMERO
+        cmp CHAR, 50
+        JE ESUNNUMERO
+        cmp CHAR, 51
+        JE ESUNNUMERO
+        cmp CHAR, 52
+        JE ESUNNUMERO
+        cmp CHAR, 53
+        JE ESUNNUMERO
+        cmp CHAR, 54
+        JE ESUNNUMERO
+        cmp CHAR, 55
+        JE ESUNNUMERO
+        cmp CHAR, 56
+        JE ESUNNUMERO
+        cmp CHAR, 57
+        JE ESUNNUMERO
+        cmp CHAR, 58
+        JNE NOESNUMERO
+        JE ESUNNUMERO
+        cmp CHAR, 59
+        ESUNNUMERO:
+            MOV flagesnumero, '1'
+        NOESNUMERO:
+        RET
+    ESNUMERO_ ENDP
 
 
 
 
 
 
+;*        █████████████████████████████████████████████████████████████████████
+;*        █▄─▄▄─█─▄▄▄▄█─▄─▄─██▀▄─██▄─▄▄▀█▄─▄█─▄▄▄▄█─▄─▄─█▄─▄█─▄▄▄─██▀▄─██─▄▄▄▄█
+;*        ██─▄█▀█▄▄▄▄─███─████─▀─███─██─██─██▄▄▄▄─███─████─██─███▀██─▀─██▄▄▄▄─█
+;*        ▀▄▄▄▄▄▀▄▄▄▄▄▀▀▄▄▄▀▀▄▄▀▄▄▀▄▄▄▄▀▀▄▄▄▀▄▄▄▄▄▀▀▄▄▄▀▀▄▄▄▀▄▄▄▄▄▀▄▄▀▄▄▀▄▄▄▄▄▀
 
+;? Los estadísticos se calculan sobre las entradas recibidas y no sobre los resultados, ﬁnales o parciales, de las operaciones.
+;? Estadístico	       Observaciones
+;? Media	        Salida parte entera
+;? Mediana	        Salida parte entera Moda
+;? Números          pares Números impares
+;? Números          Fibonacci	Se debe calcular
+;? Números Lucas	Se debe calcular
+FIBONACCI_ PROC NEAR
+    ;  se van sumando a pares, de manera que cada número es igual a la suma
+    ;  de sus dos anteriores, de manera que: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55…
+    MOV AX, 0
+    MOV BX, 1
+    push AX        ;! BX, AX
+    push BX    ;* top [1, 0] fondo
+    INICIO:
+        POP BX
+        POP AX
+        MOV AX, BX
+        ADD BX,AX
+        CMP BX, NUMESFIB
+        JE SONIGUALES
+        JNE SIGOITERANDO
+        SIGOITERANDO:
+            cmp BX,NUMESFIB
+            jb NOESFIBONACCI    ;Si el segundo es menor
+            push AX
+            push BX
+            JMP INICIO
+    SONIGUALES:
+        MOV flagESFIBONACCI, "1"
+        JMP SALIR
+    NOESFIBONACCI:
+        MOV flagESFIBONACCI, "0"
+        JMP SALIR
+    SALIR:
+    RET
 
-
-
-
-
-
-
-
-
-
-
+FIBONACCI_ ENDP
 
 
 

@@ -176,7 +176,7 @@ ANALIZARYCALCULAR MACRO                           ;? ▬▬▬ ENTER
     CALL ANALIZARYCALCULAR_
     POPA
 ENDM ANALIZARYCALCULAR
-SUMA MACRO NUMDERTEMP, NUMIZQTEMP                                                 ;? ▬▬▬ SUMA
+SUMA MACRO NUMIZQTEMP ,NUMDERTEMP                                                ;? ▬▬▬ SUMA
     PUSHA
     MOV AX, NUMDERTEMP
     MOV NUMDER, AX
@@ -185,7 +185,7 @@ SUMA MACRO NUMDERTEMP, NUMIZQTEMP                                               
     CALL SUMA_
     POPA
 ENDM SUMA
-RESTA MACRO                                                  ;? ▬▬▬ RESTA
+RESTA MACRO   NUMIZQTEMP ,NUMDERTEMP                                                ;? ▬▬▬ RESTA
     PUSHA
     MOV AX, NUMDERTEMP
     MOV NUMDER, AX
@@ -194,7 +194,7 @@ RESTA MACRO                                                  ;? ▬▬▬ RESTA
     CALL RESTA_
     POPA
 ENDM RESTA
-MULTI MACRO                                                 ;? ▬▬▬ MULTI
+MULTI MACRO   NUMIZQTEMP ,NUMDERTEMP                                                ;? ▬▬▬ MULTI
     PUSHA
     MOV AX, NUMDERTEMP
     MOV NUMDER, AX
@@ -203,7 +203,7 @@ MULTI MACRO                                                 ;? ▬▬▬ MULTI
     CALL MULTI_
     POPA
 ENDM MULTI
-DIVI MACRO                                                  ;? ▬▬▬ DIVI
+DIVI MACRO NUMIZQTEMP ,NUMDERTEMP                                                 ;? ▬▬▬ DIVI
     PUSHA
     MOV AX, NUMDERTEMP
     MOV NUMDER, AX
@@ -212,7 +212,7 @@ DIVI MACRO                                                  ;? ▬▬▬ DIVI
     CALL DIVI_
     POPA
 ENDM DIVI
-POTENCIA MACRO                                              ;? ▬▬▬ POTENCIA
+POTENCIA MACRO  NUMIZQTEMP ,NUMDERTEMP                                            ;? ▬▬▬ POTENCIA
     PUSHA
     MOV AX, NUMDERTEMP
     MOV NUMDER, AX
@@ -221,4 +221,152 @@ POTENCIA MACRO                                              ;? ▬▬▬ POTENCI
     CALL POTENCIA_
     POPA
 ENDM POTENCIA
+
+;! PARSEO NUMERO DE STR A DECIMAL.
+parser MACRO  ;RESULTADO EN PARSEDNUM
+    PUSHA
+    CALL parser_
+    POPA
+ENDM parser
+
+
+
+ESNUMERO MACRO CHARS
+    PUSHA
+    MOV AL, CHARS
+    MOV CHAR, AL
+    CALL ESNUMERO_
+    POPA
+ENDM ESNUMERO
+
+ESOP MACRO CHARS
+    PUSHA
+    MOV AL, CHARS
+    MOV CHAR, AL
+    CALL ESOP_
+    POPA
+ENDM ESOP
+resetflagop MACRO CHAR
+    MOV flagsuma, '0'
+    MOV flagresta, '0'
+    MOV flagmulti, '0'
+    MOV flagdivi, '0'
+    MOV flagpot, '0'
+ENDM resetflagop
+;! CLASIFICAR TIPO DE OPERADOR PARA PRECEDENCIA
+CLASIFYDIGITS MACRO CHAR
+    PUSHA
+    CALL CLASIFYDIGITS_
+    POPA
+ENDM CLASIFYDIGITS
+
+;macro para convertir int a string 
+printnum MACRO array, seek
+    LOCAL Split, RepleaSplit, StringAnalizado, EndAnalisis, Minus
+    PUSH  SI
+    PUSH  CX
+    MOV   si, 0
+    MOV   CX, 0
+    MOV   BX, 0
+    MOV   DX, 0
+    MOV   bx, 0ah
+    MOV   ax, seek
+    test  AX, 8000H
+    jnz   Minus
+        JMP   Split
+    Minus:
+        neg   AX
+        MOV   array[si], 2dh
+        INC   si
+        JMP   Split
+    RepleaSplit:                                                                 	;
+        MOV   dx, 0
+    Split:
+        div   bx
+        INC   CX
+        PUSH  DX
+        CMP   AX, 00h
+        JE    StringAnalizado
+        JMP   RepleaSplit
+    StringAnalizado:
+        POP   AX
+        add   ax, 30h
+        MOV   array[si], ax
+        INC   si
+        LOOP  StringAnalizado
+        MOV   ax, 24h
+        MOV   array[si], ax
+    EndAnalisis:
+        POP   CX
+        POP   SI
+ENDM printnum
+;macro para convertir un string (si se le puede llmar de esta manera) a un ascii (caracter)
+intToString MACRO number, output
+    LOCAL      beginConv, EndConv
+    PUSHA
+    mov        AX, 0
+    mov        bx, 0
+    mov        cx, 0
+    mov        bx, 10    ;este 10 sirve como tempiliar para unir los numeros a uno solo por unidades, decenas etc
+    mov        si, 0
+
+    beginConv:  
+        mov        CL, number[si] ;mueve el valor del numero en la poscion SI al registro cl
+        cmp        CL, 30h ;compara si ya termino de leer el string 
+        jl         EndConv 
+        cmp        CL, 39h ;compara si ya termino de leer el string 
+        jg         EndConv
+        inc        si ;incrementa si
+        sub        cl, 30h ;compara si ya termino de leer el string
+        mul        bx ;realiza la multiplicacion para la conversion
+        add        ax, cx ;suma ax y cx 
+        JMP        beginConv ;se va a finalizar la conversion 
+    EndConv:    
+        mov        output, ax ;mueve a salida el registro ax
+    POPA
+ENDM
+
+FIBONACCI MACRO CHAR ,NUMESFIBX
+    PUSHA
+    MOV AX, NUMESFIBX
+    MOV NUMESFIB, AX
+    CALL FIBONACCI_
+    POPA
+ENDM FIBONACCI
+
+getProm MACRO
+    LOCAL While, endWhile
+    mov   si,0
+    mov   ax, 0
+    While:
+        mov   ax, listValues[si]
+        add   ax, mediaAns
+        mov   mediaAns, ax
+        inc   si
+        inc   si
+        cmp   si, counterValue
+        je    endWhile
+        jmp   While
+    endWhile:
+        mov   bx, 0
+        mov   ax, 0
+        mov   ax, counterValue
+        mov   bx, 2
+        cwd
+        idiv  bx
+
+        mov   bx, ax
+        mov   ax, mediaAns
+        cwd
+        idiv  bx
+        mov   mediaAns, ax
+ENDM
+
+
+
+
+
+
+
+
 
