@@ -189,24 +189,19 @@ INCLUDE ARCHIVOS.inc
                                 ; esperaenter
         limpiar
         readtext
-                    MOV NUMTEMP[0],"2"
-                    MOV NUMTEMP[1],"$"
-                    intToString NUMTEMP, PARSEDNUM
-                    POTENCIA PARSEDNUM,PARSEDNUM
-                    printnum RESULTADOPRINT, RESULTADOPREVIO
-                    print RESULTADOPRINT
+                MOV NUMTEMP[0],"2"
+                MOV NUMTEMP[1],"$"
+                intToString NUMTEMP, PARSEDNUM
+                POTENCIA PARSEDNUM,PARSEDNUM
+                printnum RESULTADOPRINT, RESULTADOPREVIO
+                print RESULTADOPRINT
+        
+        
         readtext
+        ANALIZARYCALCULAR
+        
         limpiar
-        readtext
-        poscursor 6,22
-        print tm1c
-        poscursor 8,22
-        print tm2c
-        poscursor 10,22
-        print tm3c
-        poscursor 12,22
-        print tm4c
-        poscursor 16,29
+        PRINTMENU ;! IMPRIME EL MENU
         readtext
         OPCIONDEMENU
         SALIDADEUNA:
@@ -411,14 +406,15 @@ INCLUDE ARCHIVOS.inc
         ; push AH ;? METO AL FONDO DE LA PILA EL CARACTER $
         ; ! agrego de NumerosUltimos a ResultPosfijo
         INICIO:
+            MOV AX, '$'
+            MOV 
             cmp keypress[DI], "$"
-            JE CALCULARHOYSI
+            JE CALCULARHOYSI        ;! AQUI TERMINE DE ANALIZAR LA CADENA
             ESNUMERO keypress[DI] ;*es un numero?
             cmp flagesnumero, '1'
             JNE NOESNUMERO
             JE SIESNUMERO
             SIESNUMERO:
-                MOV flagesnumero, '0'  ;*regreso a 0 el flag
                 MOV AH, keypress[DI]
                 MOV NUMTEMP[BX], AH    ;* paso a numtemp el char que es numero
                 INC BX
@@ -433,7 +429,7 @@ INCLUDE ARCHIVOS.inc
                     MOV NUMTEMP[BX],'$'
                     ;! entonces guardo el numero que ya tengo y sigo
                     ;! NEcesito primero PARSEAR
-                    parser
+                    intToString NUMTEMP, PARSEDNUM
                     MOV AX, PARSEDNUM
                     push AX ;? METO A LA PILA EL CARACTER DE PARSEDNUM
                     JMP SIGUIENTE
@@ -501,7 +497,7 @@ INCLUDE ARCHIVOS.inc
 
             ;! ORDENO
         CALCULARHOYSI:
-        ;! SI OPERO (5+5)*-3 tengo pila ==>  top: 3,-,*,),5,+,+,(,$ :fondo
+        ;! SI OPERO (5+5)*-3 tengo pila ==>  top: 3,-,*,),5,+,5,(,$ :fondo
             MOV DI, 0
             REORDENO:
                 pop CX
@@ -516,7 +512,7 @@ INCLUDE ARCHIVOS.inc
                     MOV AX, '$'
                     MOV NumerosUltimos[DI], AX
                     JMP INICIOALGORITMOCOMPI
-
+    ;TODO: HASTA AQUI LA PILA ESTA VACIA Y TODO ESTA EN NUMEROSULTIMOS
             ;! INICIO EL ALGORITMO FULL DE LA TABLA DE COMPI 1
         INICIOALGORITMOCOMPI:
             ;! RECORRO OTRA VEZ TODO :
@@ -671,8 +667,91 @@ INCLUDE ARCHIVOS.inc
         EJECUTARPOSFIJO:
             ;*teniendo ya la cadena en posfijo procedo a ejecutar 
             ;* las operaciones
-            ;todo si tengo
+            ;todo: TENGO LA PILA VACIA
+            MOV AX, '$'
+            PUSH AX
+            MOV DI, 0
+            RECORRERPOSFIJO:
+                cmp ResultPosfijo[DI], '$'
+                JNE SIGUIENTEDIGITOPOSFIJO ;?SINO
+                JE TERMINORESULTPOSFIJO ;? SISI
+                TERMINORESULTPOSFIJO: ; * AL TERMINAR LA CADENA POSFIJA
+                    JMP SALIR
+                SIGUIENTEDIGITOPOSFIJO:
+                    ;! SI ES UN OPERADOR
+                        ; SACO DE LA PILA 2 NUMEROS Y OPERO
+                    ; Si es un operador, lo que haremos será sacar dos números reales de la
+                    ; pila y les aplicaremos el operador sobre ellos. El resultado lo
+                    ; meteremos en la pila. Hay que tener en cuenta a los operadores resta
+                    ; y cociente (- y /) ya que en ocasiones no nos es indiferente el orden
+                    ; de los números. Para ellos, el elemento que antes hubiese entrado en
+                    ; la pila, es decir, el que sacamos en segundo lugar, será el que
+                    ; aparezca a la izquierda del operador.
+                    resetflagop
+                    ESOP2 ResultPosfijo[DI]
+                    cmp flagsuma, '1'
+                    JE HAGOLA_SUMA
+                    cmp flagresta, '1'
+                    JE HAGOLA_RESTA
+                    cmp flagmulti, '1'
+                    JE HAGOLA_MULTIPLICACION
+                    cmp flagdivi, '1'
+                    JE HAGOLA_DIVISION
+                    cmp flagpot, '1'
+                    JNE SOLOAGREGOUNNUMERO
+                    JE HAGOLA_POTENCIACION
+                    HAGOLA_SUMA:
+                        pop AX  ; JALO LOS ULTIMOS DE LA PILA.
+                        pop CX
+                        SUMA CX, AX    ; RESULTADO SE GUARDA EN RESULTADOPREVIO
+                        MOV BX, RESULTADOPREVIO
+                        PUSH BX           ; AGREGO EL RESULTADO A LA PILA
+                        INC DI
+                        JMP RECORRERPOSFIJO
 
+                    HAGOLA_RESTA:
+                        pop AX  ; JALO LOS ULTIMOS DE LA PILA.
+                        pop CX
+                        RESTA CX, AX    ; RESULTADO SE GUARDA EN RESULTADOPREVIO
+                        MOV BX, RESULTADOPREVIO
+                        PUSH BX           ; AGREGO EL RESULTADO A LA PILA
+                        INC DI
+                        JMP RECORRERPOSFIJO
+
+                    HAGOLA_MULTIPLICACION:
+                        pop AX  ; JALO LOS ULTIMOS DE LA PILA.
+                        pop CX
+                        MULTI CX, AX    ; RESULTADO SE GUARDA EN RESULTADOPREVIO
+                        MOV BX, RESULTADOPREVIO
+                        PUSH BX           ; AGREGO EL RESULTADO A LA PILA
+                        INC DI
+                        JMP RECORRERPOSFIJO
+
+                    HAGOLA_DIVISION:
+                        pop AX  ; JALO LOS ULTIMOS DE LA PILA.
+                        pop CX
+                        DIVI CX, AX    ; RESULTADO SE GUARDA EN RESULTADOPREVIO
+                        MOV BX, RESULTADOPREVIO
+                        PUSH BX           ; AGREGO EL RESULTADO A LA PILA
+                        INC DI
+                        JMP RECORRERPOSFIJO
+
+                    HAGOLA_POTENCIACION:
+                        pop AX  ; JALO LOS ULTIMOS DE LA PILA.
+                        pop CX
+                        POTENCIA CX, AX    ; RESULTADO SE GUARDA EN RESULTADOPREVIO
+                        MOV BX, RESULTADOPREVIO
+                        PUSH BX           ; AGREGO EL RESULTADO A LA PILA
+                        INC DI
+                        JMP RECORRERPOSFIJO
+
+                    ;! SI ES UN NUMERO ADD TO STACK
+                    ; Si es un número real, lo meteremos en la pila.
+                    SOLOAGREGOUNNUMERO:
+                        MOV AX, ResultPosfijo[DI]
+                        push AX
+                        INC DI
+                        JMP RECORRERPOSFIJO
         SALIR:
         RET
     ANALIZARYCALCULAR_ ENDP 
@@ -930,7 +1009,38 @@ INCLUDE ARCHIVOS.inc
         SALIR:
         RET
     ESOP_ ENDP
-    
+    ESOP2_ PROC NEAR
+        cmp CHAR, 42
+        JE ESMULTI1
+        cmp CHAR, 43
+        JE ESSUM1
+        cmp CHAR, 45
+        JE ESREST1
+        cmp CHAR, 47
+        JE ESDIVI1
+        cmp CHAR, 94
+        JNE SALIR
+        JE ESPOT1
+        
+
+        ESMULTI1:
+            MOV flagmulti, '1'
+            JMP SALIR
+        ESSUM1:
+            MOV flagsuma, '1'
+            JMP SALIR
+        ESREST1:
+            MOV flagresta, '1'
+            JMP SALIR
+        ESDIVI1:
+            MOV flagdivi, '1'
+            JMP SALIR
+        ESPOT1:
+            MOV flagpot, '1'
+            JMP SALIR
+        SALIR:
+        RET
+    ESOP2_ ENDP
     CLASIFYDIGITS_ PROC NEAR
         cmp CHAR, 40
         JE ESPARA
@@ -973,7 +1083,7 @@ INCLUDE ARCHIVOS.inc
             JMP SALIR
         ESPOT1:
             ; MOV flagpot, '1'
-            MOV flagOPAux, "2"
+            MOV flagOPAux, "5"
             JMP SALIR
         ESNUMEROENTONCES:
             MOV flagOPAux, '4'
@@ -1009,7 +1119,11 @@ INCLUDE ARCHIVOS.inc
         cmp CHAR, 59
         ESUNNUMERO:
             MOV flagesnumero, '1'
+            JMP SALIR
         NOESNUMERO:
+            MOV flagesnumero, '0'
+            JMP SALIR
+        SALIR:
         RET
     ESNUMERO_ ENDP
 
@@ -1018,51 +1132,49 @@ INCLUDE ARCHIVOS.inc
 
 
 
-;*        █████████████████████████████████████████████████████████████████████
-;*        █▄─▄▄─█─▄▄▄▄█─▄─▄─██▀▄─██▄─▄▄▀█▄─▄█─▄▄▄▄█─▄─▄─█▄─▄█─▄▄▄─██▀▄─██─▄▄▄▄█
-;*        ██─▄█▀█▄▄▄▄─███─████─▀─███─██─██─██▄▄▄▄─███─████─██─███▀██─▀─██▄▄▄▄─█
-;*        ▀▄▄▄▄▄▀▄▄▄▄▄▀▀▄▄▄▀▀▄▄▀▄▄▀▄▄▄▄▀▀▄▄▄▀▄▄▄▄▄▀▀▄▄▄▀▀▄▄▄▀▄▄▄▄▄▀▄▄▀▄▄▀▄▄▄▄▄▀
+    ;*        █████████████████████████████████████████████████████████████████████
+    ;*        █▄─▄▄─█─▄▄▄▄█─▄─▄─██▀▄─██▄─▄▄▀█▄─▄█─▄▄▄▄█─▄─▄─█▄─▄█─▄▄▄─██▀▄─██─▄▄▄▄█
+    ;*        ██─▄█▀█▄▄▄▄─███─████─▀─███─██─██─██▄▄▄▄─███─████─██─███▀██─▀─██▄▄▄▄─█
+    ;*        ▀▄▄▄▄▄▀▄▄▄▄▄▀▀▄▄▄▀▀▄▄▀▄▄▀▄▄▄▄▀▀▄▄▄▀▄▄▄▄▄▀▀▄▄▄▀▀▄▄▄▀▄▄▄▄▄▀▄▄▀▄▄▀▄▄▄▄▄▀
 
-;? Los estadísticos se calculan sobre las entradas recibidas y no sobre los resultados, ﬁnales o parciales, de las operaciones.
-;? Estadístico	       Observaciones
-;? Media	        Salida parte entera
-;? Mediana	        Salida parte entera Moda
-;? Números          pares Números impares
-;? Números          Fibonacci	Se debe calcular
-;? Números Lucas	Se debe calcular
-FIBONACCI_ PROC NEAR
-    ;  se van sumando a pares, de manera que cada número es igual a la suma
-    ;  de sus dos anteriores, de manera que: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55…
-    MOV AX, 0
-    MOV BX, 1
-    push AX        ;! BX, AX
-    push BX    ;* top [1, 0] fondo
-    INICIO:
-        POP BX
-        POP AX
-        MOV AX, BX
-        ADD BX,AX
-        CMP BX, NUMESFIB
-        JE SONIGUALES
-        JNE SIGOITERANDO
-        SIGOITERANDO:
-            cmp BX,NUMESFIB
-            jb NOESFIBONACCI    ;Si el segundo es menor
-            push AX
-            push BX
-            JMP INICIO
-    SONIGUALES:
-        MOV flagESFIBONACCI, "1"
-        JMP SALIR
-    NOESFIBONACCI:
-        MOV flagESFIBONACCI, "0"
-        JMP SALIR
-    SALIR:
-    RET
+    ;? Los estadísticos se calculan sobre las entradas recibidas y no sobre los resultados, ﬁnales o parciales, de las operaciones.
+    ;? Estadístico	       Observaciones
+    ;? Media	        Salida parte entera
+    ;? Mediana	        Salida parte entera Moda
+    ;? Números          pares Números impares
+    ;? Números          Fibonacci	Se debe calcular
+    ;? Números Lucas	Se debe calcular
+    FIBONACCI_ PROC NEAR
+        ;  se van sumando a pares, de manera que cada número es igual a la suma
+        ;  de sus dos anteriores, de manera que: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55…
+        MOV AX, 0
+        MOV BX, 1
+        push AX        ;! BX, AX
+        push BX    ;* top [1, 0] fondo
+        INICIO:
+            POP BX
+            POP AX
+            MOV AX, BX
+            ADD BX,AX
+            CMP BX, NUMESFIB
+            JE SONIGUALES
+            JNE SIGOITERANDO
+            SIGOITERANDO:
+                cmp BX,NUMESFIB
+                jb NOESFIBONACCI    ;Si el segundo es menor
+                push AX
+                push BX
+                JMP INICIO
+        SONIGUALES:
+            MOV flagESFIBONACCI, "1"
+            JMP SALIR
+        NOESFIBONACCI:
+            MOV flagESFIBONACCI, "0"
+            JMP SALIR
+        SALIR:
+        RET
 
-FIBONACCI_ ENDP
-
-
+    FIBONACCI_ ENDP
 
 
 
@@ -1072,6 +1184,19 @@ FIBONACCI_ ENDP
 
 
 
+
+    PRINTMENU_ PROC NEAR
+        poscursor 6,22
+        print tm1c
+        poscursor 8,22
+        print tm2c
+        poscursor 10,22
+        print tm3c
+        poscursor 12,22
+        print tm4c
+        poscursor 16,29
+        RET
+    PRINTMENU_ ENDP
     ;?☻ ===================== POSICIONAR EL CURSOR ======================= ☻
     poscursor_ PROC NEAR
         ; FUNCION COLOCAR CURSOR

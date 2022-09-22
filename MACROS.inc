@@ -362,7 +362,11 @@ getProm MACRO
         mov   mediaAns, ax
 ENDM
 
-
+PRINTMENU MACRO
+    PUSHA
+    CALL PRINTMENU_
+    POPA
+ENDM
 
 
 
