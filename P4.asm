@@ -1457,9 +1457,161 @@ INCLUDE ARCHIVOS.inc
     ;? Números          Fibonacci	Se debe calcular
     ;? Números Lucas	Se debe calcular
 
+    MEDIA_ PROC NEAR
+        ;  se van sumando a pares, de manera que cada número es igual a la suma
+        ;  de sus dos anteriores, de manera que: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55…
+        MOV AX, 0
+        MOV BX, 1
+        push AX        ;! BX, AX
+        push BX    ;* top [1, 0] fondo
+        INICIO:
+            POP BX
+            POP AX
+            MOV AX, BX
+            ADD BX,AX
+            CMP BX, NUMESFIB
+            JE SONIGUALES
+            JNE SIGOITERANDO
+            SIGOITERANDO:
+                cmp BX,NUMESFIB
+                jb NOESFIBONACCI    ;Si el segundo es menor
+                push AX
+                push BX
+                JMP INICIO
+        SONIGUALES:
+            MOV flagESFIBONACCI, "1"
+            JMP SALIR
+        NOESFIBONACCI:
+            MOV flagESFIBONACCI, "0"
+            JMP SALIR
+        SALIR:
+        RET
 
+    MEDIA_ ENDP
+    MEDIANA_ PROC NEAR
+        ;  se van sumando a pares, de manera que cada número es igual a la suma
+        ;  de sus dos anteriores, de manera que: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55…
+        MOV AX, 0
+        MOV BX, 1
+        push AX        ;! BX, AX
+        push BX    ;* top [1, 0] fondo
+        INICIO:
+            POP BX
+            POP AX
+            MOV AX, BX
+            ADD BX,AX
+            CMP BX, NUMESFIB
+            JE SONIGUALES
+            JNE SIGOITERANDO
+            SIGOITERANDO:
+                cmp BX,NUMESFIB
+                jb NOESFIBONACCI    ;Si el segundo es menor
+                push AX
+                push BX
+                JMP INICIO
+        SONIGUALES:
+            MOV flagESFIBONACCI, "1"
+            JMP SALIR
+        NOESFIBONACCI:
+            MOV flagESFIBONACCI, "0"
+            JMP SALIR
+        SALIR:
+        RET
 
+    MEDIANA_ ENDP
+    MODA_ PROC NEAR
+        ;  se van sumando a pares, de manera que cada número es igual a la suma
+        ;  de sus dos anteriores, de manera que: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55…
+        MOV AX, 0
+        MOV BX, 1
+        push AX        ;! BX, AX
+        push BX    ;* top [1, 0] fondo
+        INICIO:
+            POP BX
+            POP AX
+            MOV AX, BX
+            ADD BX,AX
+            CMP BX, NUMESFIB
+            JE SONIGUALES
+            JNE SIGOITERANDO
+            SIGOITERANDO:
+                cmp BX,NUMESFIB
+                jb NOESFIBONACCI    ;Si el segundo es menor
+                push AX
+                push BX
+                JMP INICIO
+        SONIGUALES:
+            MOV flagESFIBONACCI, "1"
+            JMP SALIR
+        NOESFIBONACCI:
+            MOV flagESFIBONACCI, "0"
+            JMP SALIR
+        SALIR:
+        RET
 
+    MODA_ ENDP
+    PARES_ PROC NEAR
+        ;  se van sumando a pares, de manera que cada número es igual a la suma
+        ;  de sus dos anteriores, de manera que: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55…
+        MOV AX, 0
+        MOV BX, 1
+        push AX        ;! BX, AX
+        push BX    ;* top [1, 0] fondo
+        INICIO:
+            POP BX
+            POP AX
+            MOV AX, BX
+            ADD BX,AX
+            CMP BX, NUMESFIB
+            JE SONIGUALES
+            JNE SIGOITERANDO
+            SIGOITERANDO:
+                cmp BX,NUMESFIB
+                jb NOESFIBONACCI    ;Si el segundo es menor
+                push AX
+                push BX
+                JMP INICIO
+        SONIGUALES:
+            MOV flagESFIBONACCI, "1"
+            JMP SALIR
+        NOESFIBONACCI:
+            MOV flagESFIBONACCI, "0"
+            JMP SALIR
+        SALIR:
+        RET
+
+    PARES_ ENDP
+    IMPARES_ PROC NEAR
+        ;  se van sumando a pares, de manera que cada número es igual a la suma
+        ;  de sus dos anteriores, de manera que: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55…
+        MOV AX, 0
+        MOV BX, 1
+        push AX        ;! BX, AX
+        push BX    ;* top [1, 0] fondo
+        INICIO:
+            POP BX
+            POP AX
+            MOV AX, BX
+            ADD BX,AX
+            CMP BX, NUMESFIB
+            JE SONIGUALES
+            JNE SIGOITERANDO
+            SIGOITERANDO:
+                cmp BX,NUMESFIB
+                jb NOESFIBONACCI    ;Si el segundo es menor
+                push AX
+                push BX
+                JMP INICIO
+        SONIGUALES:
+            MOV flagESFIBONACCI, "1"
+            JMP SALIR
+        NOESFIBONACCI:
+            MOV flagESFIBONACCI, "0"
+            JMP SALIR
+        SALIR:
+        RET
+
+    IMPARES_ ENDP
     FIBONACCI_ PROC NEAR
         ;  se van sumando a pares, de manera que cada número es igual a la suma
         ;  de sus dos anteriores, de manera que: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55…
@@ -1491,6 +1643,37 @@ INCLUDE ARCHIVOS.inc
         RET
 
     FIBONACCI_ ENDP
+    LUCASLUCAS_ PROC NEAR
+        ;  se van sumando a pares, de manera que cada número es igual a la suma
+        ;  de sus dos anteriores, de manera que: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55…
+        MOV AX, 0
+        MOV BX, 1
+        push AX        ;! BX, AX
+        push BX    ;* top [1, 0] fondo
+        INICIO:
+            POP BX
+            POP AX
+            MOV AX, BX
+            ADD BX,AX
+            CMP BX, NUMESFIB
+            JE SONIGUALES
+            JNE SIGOITERANDO
+            SIGOITERANDO:
+                cmp BX,NUMESFIB
+                jb NOESFIBONACCI    ;Si el segundo es menor
+                push AX
+                push BX
+                JMP INICIO
+        SONIGUALES:
+            MOV flagESFIBONACCI, "1"
+            JMP SALIR
+        NOESFIBONACCI:
+            MOV flagESFIBONACCI, "0"
+            JMP SALIR
+        SALIR:
+        RET
+
+    LUCASLUCAS_ ENDP
 
 
 
