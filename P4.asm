@@ -1026,12 +1026,22 @@ INCLUDE ARCHIVOS.inc
             INC SI
             JMP WHILES
         FINARCHIVO:
+            MOV DI, CONTADORValues ;*-------------
+            MOV listValues[DI], '$'
+            INC DI
+            MOV CONTADORValues, DI ;*-------------
+            MOV DI, CONTADORNumbers ;*-------------
+            MOV listNumbers[DI], '$'
+            INC DI
+            MOV CONTADORNumbers, DI ;*-------------
         RET
     ANALIZARARCHIVOENTRADA_ ENDP
     ADDTOSTATISTICSLIST_ PROC NEAR
         MOV SI,0
         MOV DI,0
         INICIO:
+            CMP ListValues[SI],'$'
+            JE SALIR
             ESNUMERO ListValues[SI]
             CMP flagesnumero, '1'
             JNE NELPRRO
@@ -1048,6 +1058,8 @@ INCLUDE ARCHIVOS.inc
                 MOV AX, PARSEDNUM
                 MOV DI, INDEXlistestadistic
                 mov listestadistic[DI], AX
+                INC DI
+                MOV INDEXlistestadistic, DI
                 MOV DI,0
                 INC SI
                 JMP INICIO
