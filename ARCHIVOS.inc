@@ -62,7 +62,7 @@ endm
 ;macro para obtener la ruta dada por un usuario
 ;similar al de getTexto, la unica diferencia es el fin de cadena
 getRuta macro array
-LOCAL getCadena, finCadena
+    LOCAL getCadena, finCadena
     mov si,0    ;xor si,si
 
     getCadena:
@@ -105,18 +105,20 @@ crear macro buffer, handler
     mov handler, ax ;sino hubo error nos devuelve el handler 
 
 endm
-cleanBuffer macro buffer,numBytes,caracter;?    limpiar un array
+cleanBuffer macro buffer;?    limpiar un array
 ; buffer = array de bytes
 ; numBytes = numero de bytes a limpiar
 ; caracter = caracter con el que se va a limpiar
-    LOCAL repeat 
+    LOCAL repeat
+    PUSHA
     mov si,0
     mov cx,0
-    mov cx,numBytes
+    mov cx,SIZEOF buffer
     repeat:
-        mov buffer[si],caracter
+        mov buffer[si],'$'
         inc si
         loop repeat
+    POPA
 endm
 
 ; * ☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻ FECHA Y HORA ☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻

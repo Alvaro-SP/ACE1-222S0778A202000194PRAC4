@@ -104,20 +104,30 @@ INCLUDE ARCHIVOS.inc
         RESULTADOPREVIO   DW 0,'$'
         RESULTADOPRINT       dw 00h, '$'
         NUMCONVERTEMP       db ?
-        CHAR       db ?
-
+        CHAR       dW ?
+        CHARNUM       dB ?
+        tempstat       dB ?
         ;* almacenar los nombres de las operaciones
-        listNumbers         db 250 dup('$')
+        listNumbers         db 2000 dup('$')
+        CONTADORNumbers DW 0 ;!CONTADOR DE ID
         ;*almacenar los resultados de las operaciones
-        listValues          dw 250 dup('$')
+        listValues          dB 2000 dup('$')
+        CONTADORValues  DW 0 ;! resultados de ID
         ;*almacenar los VALORES PARA ESTADISTICOS
-        listestadistic          dw 800 dup('$')
+        listestadistic          dw ? ;! ESTADISTICOS SE BASA EN ESTO RESETEAR
         INDEXlistestadistic     DW ?
     ;* --------------------------  ESTADISTICOS -----------------------------
-    NUMESFIB DW ?
-    flagESFIBONACCI DB ?
+        NUMESFIB DW ?
+        flagESFIBONACCI DB ?
+        mediaRES            dw 0,'$'
+        medianaRES          dw 0,'$'
+        modaRES             dw 0,'$'
+        cantparesRES              dw 0,'$'
+        cantimparesRES              dw 0,'$'
+        cantFIBOS              dw 0,'$'
+        cantLUCAS              dw 0,'$'
     ;* --------------------------  REPORTES -----------------------------
-        Filenamejug1  db  'RepOP.xml'
+        Filenamejug1  db  'Rep.xml'
         handlerentrada dw ?
         handlerentrada2 dw ?
         handler   dw ?
@@ -167,7 +177,8 @@ INCLUDE ARCHIVOS.inc
     
         SI_SIMULADO             DW ?
         SI_SIMULADO2             DW ?
-        buffInfo db 20000 dup('$')
+        buffInfo db 20000 dup('$') ;! PARA REPORTE
+        buffXML db 20000 dup('$')   ;! PARA ENTRADA
         date      db "dd/mm/2022  "
         time      db "00:00:00"
         h1Time    db '$'
@@ -182,6 +193,7 @@ INCLUDE ARCHIVOS.inc
         MOV AX, @DATA
         MOV DS, AX
         MOV ES, AX
+        MOV INDEXlistestadistic,0 ;TODO: PARA RESET TAMBIEN
                                 ; misdatos
                                 ; esperaenter  ;TODO: activar despues
                                 ; paint  0, 0, 800, 600, BLACK ;*LIMPIA TODO MODO VIDEO:V
@@ -198,11 +210,10 @@ INCLUDE ARCHIVOS.inc
         
         
         readtext
-        ANALIZARYCALCULAR
+        ; ANALIZARYCALCULAR
         
         limpiar
-        PRINTMENU ;! IMPRIME EL MENU
-        readtext
+        
         OPCIONDEMENU
         SALIDADEUNA:
             mov ax, 4c00h
@@ -364,6 +375,10 @@ INCLUDE ARCHIVOS.inc
     readtext_ ENDP
     ;?☻ ===================== OPCIONES DEL MENU ======================= ☻
     OPCIONDEMENU_ PROC NEAR
+        INICIODEMENU:
+        limpiar
+        PRINTMENU ;! IMPRIME EL MENU
+        readtext
         CMP keypress,'1'     ; si tecla es 1
         JNE CARGARXMLTEMP     ; sino es 1 se va a cargar
         JE CALCULOSIMPLE     ; SI SI ES SE VA A INICIARCALCULOS
@@ -373,17 +388,32 @@ INCLUDE ARCHIVOS.inc
             JE CARGARXML ; SI SI ES SE VA A CARGARJUEGO
         CARGARXML:
             limpiar
+            cleanBuffer file
+            cleanBuffer fileData
+            cleanBuffer buffXML
+            cleanBuffer buffInfo
+            cleanBuffer listNumbers
+            cleanBuffer listValues
+            MOV CONTADORNumbers, 0
+            MOV CONTADORValues, 0
             poscursor 10,15
             print ingpath
             poscursor 11, 10
             getRuta file
 
-            ; openFile file, handler
-            ; readFile handler, matriz2, SIZEOF matriz2
-            ; cleanBuffer file,SIZEOF file,24h
-            ; closeFile handler
+            openFile file, handler
+            readFile handler, buffXML, SIZEOF buffXML
+            cerrar handler
             poscursor 15,15
             print cargadoexito
+            readtext
+            ANALIZARARCHIVOENTRADA
+            ADDTOSTATISTICSLIST
+            print listNumbers
+            readtext
+            print listValues
+            readtext
+            jMP INICIODEMENU
         CALCULOSIMPLE:
             ; limpiar
             ; poscursor 1,30
@@ -406,8 +436,6 @@ INCLUDE ARCHIVOS.inc
         ; push AH ;? METO AL FONDO DE LA PILA EL CARACTER $
         ; ! agrego de NumerosUltimos a ResultPosfijo
         INICIO:
-            MOV AX, '$'
-            MOV 
             cmp keypress[DI], "$"
             JE CALCULARHOYSI        ;! AQUI TERMINE DE ANALIZAR LA CADENA
             ESNUMERO keypress[DI] ;*es un numero?
@@ -523,9 +551,19 @@ INCLUDE ARCHIVOS.inc
                 cmp NumerosUltimos[DI], "$"
                 JE EJECUTARPOSFIJO
                 ;! de NUMEROSULTIMOS debo agregar a RESULTPOSFIJO
-                CLASIFYDIGITS NumerosUltimos[DI]
+                CLASIFYDIGITS NumerosUltimos[DI] 
+                ;* flagOPAux tiene el tipo Actual
+                ;* flagOP tiene el tipo anterior
+                            ;? 0 ==> NO HAY OPERADORES EN LA PILA
+                            ;? 1  ==>  SUMA O RESTA
+                            ;? 2  ==>  MULTIP O DIVI
+                            ;? 3  ==>  PARENTESIS ()
+                            ;? 4  ==>  ES NUMERO    {OPERANDO}
+                            ;? 5  ==>  ES POTENCIA   [ EL MAYOR ]
                 CMP flagOPAux, '4'
                 JE SIESOPERANDO
+                CMP flagOPAux, '5'
+                JE ESPRECEDENCIA5
                 CMP flagOPAux, '3'
                 JE ESPARENTESISPREC
                 CMP flagOPAux, '2'
@@ -534,9 +572,51 @@ INCLUDE ARCHIVOS.inc
                 JE ESPRECEDENCIA1
                 ;! agrego los signos al fondo de la pila
                     ;! Pero con restricciones:
-                SIESOPERANDO:
-                    JMP AGREGARPOSFIJO
-                ESPARENTESISPREC:
+
+                                        ;*El siguiente algoritmo convierte infijos en sufijos.
+
+
+            
+
+            
+
+            ;* Si la precedencia del operador escaneado es mayor que el operador superior 
+            ;* de la pila de operadores, inserte ese operador en la pila de operandos.
+
+            
+
+            ;*Si la precedencia del operador escaneado es menor o igual que el
+            ;*operador superior de la pila de operadores, extraiga los operadores de la
+            ;*pila de operandos hasta que encontremos un operador con una precedencia
+            ;*más baja que el carácter escaneado. Nunca aparezca ( '(' ) o ( ')' ),
+            ;*sea cual sea el nivel de prioridad del carácter escaneado.
+
+            
+
+            
+
+
+
+
+            
+
+
+                ;! SI SON OPERANDOS :
+                ;*Si el carácter es un operando, empújelo a la pila de salida.
+                SIESOPERANDO:;*Si es un operando, se guardara 
+                                ;*directamente en el array o en un fichero. 
+                    MOV AX, NumerosUltimos[DI]
+                    MOV ResultPosfijo[SI], AX ;? TODOS LOS NUMEROS LOS AGREGO A POSFIJO
+                    INC SI
+                    INC DI
+                    ; POP AX
+                    ; CLASIFYDIGITS AX
+                    ; MOV DX, flagOPAux
+                    ; MOV flagOP, DX
+                    ; PUSH AX
+                    JMP RECORROALL
+                ;! SI SON OPERADORES :
+                ESPARENTESISPREC: ;? ████████████████  PARENTESIS █████████████████
                     cmp flagOP, '0' ; porque es el primer operando
                     JE APILOOP
                     cmp NumerosUltimos[DI], 40
@@ -544,9 +624,13 @@ INCLUDE ARCHIVOS.inc
                     cmp NumerosUltimos[DI], 41
                     JE ESPARENTESISQUECIERRA
                     ESPARENTESISQUEABRE:
+                        ;*Si un carácter abre un paréntesis ( '(' ), empújelo
+                        ;*a la pila de sentencias.
                         JMP APILOOP
                     ESPARENTESISQUECIERRA:
                         ;! PASO A RESULTPOSFIJO HASTA HALLAR (
+                        ;*Si un carácter cierra un paréntesis  ')' , extraiga sentencias de
+                        ;*la pila de sentencias hasta que encontremos el paréntesis de apertura '(' .
                         pop AX
                         CMP AX, 40
                         JNE pasoaresultlodepila
@@ -566,39 +650,75 @@ INCLUDE ARCHIVOS.inc
                             llegoaltopedepila:
                                 MOV flagOP, '0'
                                 JMP RECORROALL
-                            CLASIFYDIGITS AX
-                            MOV DX, flagOPAux
-                            MOV flagOP, DX ; ! PA SABER QUE HAY EN BORDE
-                            PUSH AX
-                            JMP RECORROALL
                         pasoaresultlodepila:
                             MOV ResultPosfijo[SI], AX
                             INC SI
+                            JMP ESPARENTESISQUECIERRA
 
 
 
-                ESPRECEDENCIA2:
+                ESPRECEDENCIA5:  ;? ████████████████ POTENCIACION █████████████████
                     cmp flagOP, '0' ; porque es el primer operando
                     JE APILOOP
+                    ;* Si la precedencia del operador escaneado es mayor que el operador superior       escaneado == flagOPAux
+                    ;* de la pila de operadores, inserte ese operador en la pila de operandos.          superior == flagOP
+                    cmp flagOP, '2'     ;! SI EN LA PILA ES 2
+                    JE APILOOP
+                    cmp flagOP, '1'     ;! SI EN LA PILA ES 1
+                    JE APILOOP
+                    cmp flagOP, '5'     ;! SI EN LA PILA ES 5
+                    JE APILOOP
+
+                    CMP flagOP, '3'
+                    JE APILOOP
+
+                    ;*Si la precedencia del operador escaneado es menor o igual que el
+                    ;*operador superior de la pila de operadores, extraiga los operadores de la
+                    ;*pila de operandos hasta que encontremos un operador con una precedencia
+                    ;*más baja que el carácter escaneado.
+                        ;! no hay mayor
+                ESPRECEDENCIA2:  ;? ████████████████  MULTIPLICA DIVISION █████████████████
+                    cmp flagOP, '0' ; porque es el primer operando
+                    JE APILOOP
+                    ;* Si la precedencia del operador escaneado es mayor que el operador superior       escaneado == flagOPAux
+                    ;* de la pila de operadores, inserte ese operador en la pila de operandos.          superior == flagOP
                     ;! SE PRECEDENCIA ES MAYOR DEL QUE ESTA EN PILA
                     ;! ENTONCES SE APILA EL OPERADOR ACTUAL
-                    cmp flagOP, '1'
-                    JE SIESMAYORPREC
-                    cmp flagOP, '2'
-                    JE ESIGUALPREC
-                    SIESMAYORPREC:
-                        JMP APILOOP
-                    
-                ESPRECEDENCIA1:
+                    cmp flagOP, '1'     ;! SI EN LA PILA ES 1
+                    JE APILOOP
+                    ;*Si la precedencia del operador escaneado es menor o igual que el
+                    ;*operador superior de la pila de operadores, extraiga los operadores de la
+                    ;*pila de operandos hasta que encontremos un operador con una precedencia
+                    ;*más baja que el carácter escaneado.
+                    cmp flagOP, '5'     ;! SI EN LA PILA ES 5
+                    JE SIESMENORPREC
+                    cmp flagOP, '2'     ;! SI EN LA PILA ES 2
+                    JE SIESMENORPREC
+
+                    CMP flagOP, '3'
+                    JE APILOOP
+                ESPRECEDENCIA1: ;? ████████████████  SUMA O RESTA █████████████████
                     cmp flagOP, '0' ; porque es el primer operando
                     JE APILOOP
+                    ;* Si la precedencia del operador escaneado es mayor que el operador superior       escaneado == flagOPAux
+                    ;* de la pila de operadores, inserte ese operador en la pila de operandos.          superior == flagOP
+                    ;! no hay menor
+                    ;*Si la precedencia del operador escaneado es menor o igual que el
+                    ;*operador superior de la pila de operadores, extraiga los operadores de la
+                    ;*pila de operandos hasta que encontremos un operador con una precedencia
+                    ;*más baja que el carácter escaneado.
                     ;! SE PRECEDENCIA ES MENOR DEL QUE ESTA EN PILA
                     ;! ENTONCES SE PURGA LA CUMBRE DE LA PILA HASTA
                     ;! QUE NO LO SEA
+                    cmp flagOP, '5'
+                    JE SIESMENORPREC
                     cmp flagOP, '2'
                     JE SIESMENORPREC
                     cmp flagOP, '1'
-                    JE ESIGUALPREC
+
+                    JE SIESMENORPREC
+                    CMP flagOP, '3'
+                    JE APILOOP
 
                     SIESMENORPREC:
                         POP AX
@@ -623,16 +743,20 @@ INCLUDE ARCHIVOS.inc
                                 MOV ResultPosfijo[SI], AX
                                 INC SI
                                 JMP SIGUEYSIGUESIENDOMENOR
+                
+                ;! SI ES PRIMER OPERANDO ENTONCES APILO
+                ;*Si el símbolo es una declaración y la pila de declaraciones
+                ;*está vacía, inserte la declaración en la pila de declaraciones.  ya
                 APILOOP:
-                    ;! SI ES PRIMER OPERANDO ENTONCES APILO
                     MOV AX, NumerosUltimos[DI]
                     push AX
                     INC DI
-                    POP AX
+
+                    POP AX              ;! -------- ACTUALIZO EL OPERADOR SIGUIENTE
                     CLASIFYDIGITS AX
                     MOV DX, flagOPAux
                     MOV flagOP, DX
-                    PUSH AX
+                    PUSH AX             ;! --------
                     JMP RECORROALL
 
                 ESIGUALPREC:
@@ -651,20 +775,16 @@ INCLUDE ARCHIVOS.inc
                     MOV flagOP, DX
                     PUSH AX
                     JMP RECORROALL
-                AGREGARPOSFIJO:
-                    MOV AX, NumerosUltimos[DI]
-                    MOV ResultPosfijo[SI], AX ;? TODOS LOS NUMEROS LOS AGREGO A POSFIJO
-                    INC SI
-                    INC DI
-                    POP AX
-                    CLASIFYDIGITS AX
-                    MOV DX, flagOPAux
-                    MOV flagOP, DX
-                    PUSH AX
-                    JMP RECORROALL
+
+
 
         ;! RECORRE Y EJECUTA LA CADENA EN POSFIJO.
         EJECUTARPOSFIJO:
+            ;*Ahora extraiga las declaraciones restantes de la pila de declaraciones
+            ;*y empújelas a la pila de salida.
+            EXTRAER_DE_PILA: ;TODO:
+
+
             ;*teniendo ya la cadena en posfijo procedo a ejecutar 
             ;* las operaciones
             ;todo: TENGO LA PILA VACIA
@@ -675,7 +795,7 @@ INCLUDE ARCHIVOS.inc
                 cmp ResultPosfijo[DI], '$'
                 JNE SIGUIENTEDIGITOPOSFIJO ;?SINO
                 JE TERMINORESULTPOSFIJO ;? SISI
-                TERMINORESULTPOSFIJO: ; * AL TERMINAR LA CADENA POSFIJA
+                TERMINORESULTPOSFIJO: ; * AL TERMINAR LA CADENA POSFIJA RESULTADO FINAL ESTA EN POP AX
                     JMP SALIR
                 SIGUIENTEDIGITOPOSFIJO:
                     ;! SI ES UN OPERADOR
@@ -756,6 +876,187 @@ INCLUDE ARCHIVOS.inc
         RET
     ANALIZARYCALCULAR_ ENDP 
 
+    ;?☻ ===================== CALCULO ARCHIVO DE ENTRADA ======================= ☻
+    ANALIZARARCHIVOENTRADA_ PROC NEAR
+        MOV SI,0
+        MOV DI,0
+        MOV AX,0
+        WHILES:
+            mov dh, buffXML[si]
+            cmp dh, "<"
+            JNE BUSCOVALOR
+            JE N
+            N:
+            mov dh, buffXML[si+1]
+            cmp dh, "n"
+            JNE BUSCOVALOR
+            JE O
+            O:
+            mov dh, buffXML[si+2]
+            cmp dh, "o"
+            JNE BUSCOVALOR
+            JE M
+            M:
+            mov dh, buffXML[si+3]
+            cmp dh, "m"
+            JNE BUSCOVALOR
+            JE B
+            B:
+            mov dh, buffXML[si+4]
+            cmp dh, "b"
+            JNE BUSCOVALOR
+            JE R
+            R:
+            mov dh, buffXML[si+5]
+            cmp dh, "r"
+            JNE BUSCOVALOR
+            JE E
+            E:
+            mov dh, buffXML[si+6]
+            cmp dh, "e"
+            JNE BUSCOVALOR
+            JE C1
+            C1:
+            mov dh, buffXML[si+7]
+            cmp dh, ">"
+            JNE BUSCOVALOR
+            JE HALLONOMBRE
+
+            HALLONOMBRE:
+                ADD SI,8
+                HALLONOMBRE2:
+                MOV DH, buffXML[si]
+
+                MOV DI, CONTADORNumbers ;*-------------
+                MOV listNumbers[DI], DH
+                INC DI
+                MOV CONTADORNumbers, DI ;*-------------
+
+                INC SI
+                CMP buffXML[si], "<"
+                JNE HALLONOMBRE2
+                JE GUARDARNOMBRE
+            GUARDARNOMBRE:
+                MOV DI, CONTADORNumbers ;*-------------
+                MOV listNumbers[DI], '&'
+                INC DI
+                MOV CONTADORNumbers, DI ;*-------------
+                JMP WHILES
+        BUSCOVALOR:
+            mov dh, buffXML[si]
+            cmp dh, "<"
+            JNE CONTINUAR
+            JE C2Q
+            C2Q:
+            mov dh, buffXML[si+1]
+            cmp dh, "c"
+            JNE CONTINUAR
+            JE O2S
+            O2S:
+            mov dh, buffXML[si+2]
+            cmp dh, "o"
+            JNE CONTINUAR
+            JE N999
+            N999:
+            mov dh, buffXML[si+3]
+            cmp dh, "n"
+            JNE CONTINUAR
+            JE TIII
+            TIII:
+            mov dh, buffXML[si+4]
+            cmp dh, "t"
+            JNE CONTINUAR
+            JE EHHHW
+            EHHHW:
+            mov dh, buffXML[si+5]
+            cmp dh, "e"
+            JNE CONTINUAR
+            JE N777
+            N777:
+            mov dh, buffXML[si+6]
+            cmp dh, "n"
+            JNE CONTINUAR
+            JE I888
+            I888:
+            mov dh, buffXML[si+7]
+            cmp dh, "i"
+            JNE CONTINUAR
+            JE D444
+            D444:
+            mov dh, buffXML[si+8]
+            cmp dh, "d"
+            JNE CONTINUAR
+            JE O222
+            O222:
+            mov dh, buffXML[si+9]
+            cmp dh, "o"
+            JNE CONTINUAR
+            JE C22
+            C22:
+            mov dh, buffXML[si+10]
+            cmp dh, ">"
+            JNE CONTINUAR
+            JE HALLOVALOR
+            HALLOVALOR:
+                ADD SI,11
+                HALLOVALOR2:
+                MOV AH, buffXML[si]
+                cmp buffXML[si],' ' ;! osea si hay espacios en blanco no agregar
+                JNE NOHAYESPACIOBLANCO
+                JE SIHAYESPACIOBLANCO
+                NOHAYESPACIOBLANCO:
+                MOV DI, CONTADORValues ;*-------------
+                MOV listValues[DI], AH
+                INC DI
+                MOV CONTADORValues, DI ;*-------------
+                SIHAYESPACIOBLANCO:
+                INC SI
+                CMP buffXML[si], "<"
+                JNE HALLOVALOR2
+                JE GUARDARELVALOR
+            GUARDARELVALOR:
+                MOV DI, CONTADORValues ;*-------------
+                MOV listValues[DI], '&'
+                INC DI
+                MOV CONTADORValues, DI ;*-------------
+                JMP WHILES
+        CONTINUAR:
+            CMP buffXML[si],'$'
+            JE FINARCHIVO
+            INC SI
+            JMP WHILES
+        FINARCHIVO:
+        RET
+    ANALIZARARCHIVOENTRADA_ ENDP
+    ADDTOSTATISTICSLIST_ PROC NEAR
+        MOV SI,0
+        MOV DI,0
+        INICIO:
+            ESNUMERO ListValues[SI]
+            CMP flagesnumero, '1'
+            JNE NELPRRO
+            JE yesprro
+            yesprro:
+                MOV AH,  ListValues[SI]
+                MOV tempstat[DI], ah
+                inc di
+                inc SI
+                JMP INICIO
+            NELPRRO:
+                MOV tempstat[DI], '$'
+                intToString tempstat, PARSEDNUM
+                MOV AX, PARSEDNUM
+                MOV DI, INDEXlistestadistic
+                mov listestadistic[DI], AX
+                MOV DI,0
+                INC SI
+                JMP INICIO
+
+
+        SALIR:
+        RET
+    ADDTOSTATISTICSLIST_ ENDP
+    
     ;! I CAN USE AX FOR THE LEFT NUMBER
     ;! I GONNA USE BX FOR THE RIGHT NUMBER
     ;?☻ ===================== SUMA ======================= ☻
@@ -850,15 +1151,15 @@ INCLUDE ARCHIVOS.inc
     parser_ ENDP
 
     ESOP_ PROC NEAR
-        cmp CHAR, 42
+        cmp CHARNUM, 42
         JE ESMULTI1
-        cmp CHAR, 43
+        cmp CHARNUM, 43
         JE ESSUM1
-        cmp CHAR, 45
+        cmp CHARNUM, 45
         JE ESREST1
-        cmp CHAR, 47
+        cmp CHARNUM, 47
         JE ESDIVI1
-        cmp CHAR, 94
+        cmp CHARNUM, 94
         JE ESPOT1
         
         BUSCOSUM:
@@ -1021,7 +1322,6 @@ INCLUDE ARCHIVOS.inc
         cmp CHAR, 94
         JNE SALIR
         JE ESPOT1
-        
 
         ESMULTI1:
             MOV flagmulti, '1'
@@ -1093,30 +1393,30 @@ INCLUDE ARCHIVOS.inc
     CLASIFYDIGITS_ ENDP
 
     ESNUMERO_ PROC NEAR
-        cmp CHAR, 48
+        cmp CHARNUM, 48
         JE ESUNNUMERO
-        cmp CHAR, 49
+        cmp CHARNUM, 49
         JE ESUNNUMERO
-        cmp CHAR, 50
+        cmp CHARNUM, 50
         JE ESUNNUMERO
-        cmp CHAR, 51
+        cmp CHARNUM, 51
         JE ESUNNUMERO
-        cmp CHAR, 52
+        cmp CHARNUM, 52
         JE ESUNNUMERO
-        cmp CHAR, 53
+        cmp CHARNUM, 53
         JE ESUNNUMERO
-        cmp CHAR, 54
+        cmp CHARNUM, 54
         JE ESUNNUMERO
-        cmp CHAR, 55
+        cmp CHARNUM, 55
         JE ESUNNUMERO
-        cmp CHAR, 56
+        cmp CHARNUM, 56
         JE ESUNNUMERO
-        cmp CHAR, 57
+        cmp CHARNUM, 57
         JE ESUNNUMERO
-        cmp CHAR, 58
+        cmp CHARNUM, 58
         JNE NOESNUMERO
         JE ESUNNUMERO
-        cmp CHAR, 59
+        cmp CHARNUM, 59
         ESUNNUMERO:
             MOV flagesnumero, '1'
             JMP SALIR
@@ -1144,6 +1444,10 @@ INCLUDE ARCHIVOS.inc
     ;? Números          pares Números impares
     ;? Números          Fibonacci	Se debe calcular
     ;? Números Lucas	Se debe calcular
+
+
+
+
     FIBONACCI_ PROC NEAR
         ;  se van sumando a pares, de manera que cada número es igual a la suma
         ;  de sus dos anteriores, de manera que: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55…
