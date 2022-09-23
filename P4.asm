@@ -51,6 +51,8 @@ INCLUDE ARCHIVOS.inc
         txtresult       DB 175,"  ", "$"
         txtenter        DB 10, 13, "$"
         txtminus        DB 45,"$"
+        ESPAR DB "ESPARRRRRR", 10, 13, "$"
+        ESIMPAR DB "ES IMPARRRRRR", 10, 13, "$"
     ;* --------------------------  PARA OPERACIONES -----------------------------
         op              DB      0H ;! El operador
         num1_int        DD      0H  ;! guarda los enteros
@@ -114,12 +116,15 @@ INCLUDE ARCHIVOS.inc
         listValues          dB 2000 dup('$')
         CONTADORValues  DW 0 ;! resultados de ID
         ;*almacenar los VALORES PARA ESTADISTICOS
-        listestadistic          dw ? ;! ESTADISTICOS SE BASA EN ESTO RESETEAR
+        listestadistic          dw 2000 dup('$') ;! ESTADISTICOS SE BASA EN ESTO RESETEAR
         INDEXlistestadistic     DW ?
     ;* --------------------------  ESTADISTICOS -----------------------------
         NUMESFIB DW ?
+        flagESPAR DW ?
+        flagIMPAR DW ?
         flagESFIBONACCI DB ?
         mediaRES            dw 0,'$'
+        contadornumerosmedia dw ?
         medianaRES          dw 0,'$'
         modaRES             dw 0,'$'
         cantparesRES              dw 0,'$'
@@ -201,12 +206,45 @@ INCLUDE ARCHIVOS.inc
                                 ; esperaenter
         limpiar
         readtext
-                MOV NUMTEMP[0],"2"
-                MOV NUMTEMP[1],"$"
-                intToString NUMTEMP, PARSEDNUM
-                POTENCIA PARSEDNUM,PARSEDNUM
-                printnum RESULTADOPRINT, RESULTADOPREVIO
-                print RESULTADOPRINT
+                                    ;;* PRUEBA MEDIA
+                                    ; MOV NUMTEMP[0],"2"
+                                    ; MOV NUMTEMP[1],"5"
+                                    ; MOV NUMTEMP[2],"0"
+                                    ; MOV NUMTEMP[3],"0"
+                                    ; MOV NUMTEMP[4],"$"
+                                    ; intToString NUMTEMP, PARSEDNUM
+                                    ; MOV AX, PARSEDNUM
+                                    ; MOV listestadistic[0], AX
+                                    ; MOV NUMTEMP[0],"1"
+                                    ; MOV NUMTEMP[1],"0"
+                                    ; MOV NUMTEMP[2],"0"
+                                    ; MOV NUMTEMP[3],"0"
+                                    ; MOV NUMTEMP[4],"$"
+                                    ; intToString NUMTEMP, PARSEDNUM
+                                    ; MOV AX, PARSEDNUM
+                                    ; MOV listestadistic[2], AX
+                                    ; MOV listestadistic[4], AX
+                                    ; MOV contadornumerosmedia,6
+                                    ; MEDIA
+                                    ; printnum RESULTADOPRINT, mediaRES
+                                    ; print RESULTADOPRINT
+                            ; ;*PRUEBA PAR IMPAR
+                            ; intToString NUMTEMP, PARSEDNUM
+                            ; print EXITO
+                            ; IMPARES PARSEDNUM
+                            ; cmp flagESPAR, '1'
+                            ; JNE IMPAR
+                            ; JE PAR
+                            ; PAR:
+                            ; print ESPAR
+                            ; JMP SIGO
+                            ; IMPAR:
+                            ; print ESIMPAR
+                            ; SIGO:
+            ; intToString NUMTEMP, PARSEDNUM
+            ; POTENCIA PARSEDNUM,PARSEDNUM
+            ; printnum RESULTADOPRINT, RESULTADOPREVIO
+            ; print RESULTADOPRINT
         
         
         readtext
@@ -1059,6 +1097,7 @@ INCLUDE ARCHIVOS.inc
                 MOV DI, INDEXlistestadistic
                 mov listestadistic[DI], AX
                 INC DI
+                INC DI
                 MOV INDEXlistestadistic, DI
                 MOV DI,0
                 INC SI
@@ -1458,36 +1497,35 @@ INCLUDE ARCHIVOS.inc
     ;? Números Lucas	Se debe calcular
 
     MEDIA_ PROC NEAR
-        ;  se van sumando a pares, de manera que cada número es igual a la suma
-        ;  de sus dos anteriores, de manera que: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55…
-        MOV AX, 0
-        MOV BX, 1
-        push AX        ;! BX, AX
-        push BX    ;* top [1, 0] fondo
-        INICIO:
-            POP BX
-            POP AX
-            MOV AX, BX
-            ADD BX,AX
-            CMP BX, NUMESFIB
-            JE SONIGUALES
-            JNE SIGOITERANDO
-            SIGOITERANDO:
-                cmp BX,NUMESFIB
-                jb NOESFIBONACCI    ;Si el segundo es menor
-                push AX
-                push BX
-                JMP INICIO
-        SONIGUALES:
-            MOV flagESFIBONACCI, "1"
-            JMP SALIR
-        NOESFIBONACCI:
-            MOV flagESFIBONACCI, "0"
-            JMP SALIR
+        ;*El promedio de la lista puede ser calculado simplemente
+        ;*dividiendo la suma de los elementos por el número de elementos
+        mov   si,0
+        mov   ax, 0
+        Whilezzz:
+            mov ax, listestadistic[si]
+            ADD mediaRES,ax
+            inc si
+            inc si
+            cmp si, contadornumerosmedia
+            je endWhilezzz
+            jmp Whilezzz
+        endWhilezzz:
+            mov   bx, 0
+            mov   ax, 0
+            mov   ax, contadornumerosmedia
+            mov   bx, 2
+            cwd
+            idiv  bx
+
+            mov   bx, ax
+            mov   ax, mediaRES
+            cwd
+            idiv  bx
+            mov   mediaRES, ax
         SALIR:
         RET
-
     MEDIA_ ENDP
+
     MEDIANA_ PROC NEAR
         ;  se van sumando a pares, de manera que cada número es igual a la suma
         ;  de sus dos anteriores, de manera que: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55…
@@ -1550,63 +1588,21 @@ INCLUDE ARCHIVOS.inc
         RET
 
     MODA_ ENDP
-    PARES_ PROC NEAR
-        ;  se van sumando a pares, de manera que cada número es igual a la suma
-        ;  de sus dos anteriores, de manera que: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55…
-        MOV AX, 0
-        MOV BX, 1
-        push AX        ;! BX, AX
-        push BX    ;* top [1, 0] fondo
-        INICIO:
-            POP BX
-            POP AX
-            MOV AX, BX
-            ADD BX,AX
-            CMP BX, NUMESFIB
-            JE SONIGUALES
-            JNE SIGOITERANDO
-            SIGOITERANDO:
-                cmp BX,NUMESFIB
-                jb NOESFIBONACCI    ;Si el segundo es menor
-                push AX
-                push BX
-                JMP INICIO
-        SONIGUALES:
-            MOV flagESFIBONACCI, "1"
-            JMP SALIR
-        NOESFIBONACCI:
-            MOV flagESFIBONACCI, "0"
-            JMP SALIR
-        SALIR:
-        RET
-
-    PARES_ ENDP
     IMPARES_ PROC NEAR
-        ;  se van sumando a pares, de manera que cada número es igual a la suma
-        ;  de sus dos anteriores, de manera que: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55…
-        MOV AX, 0
-        MOV BX, 1
-        push AX        ;! BX, AX
-        push BX    ;* top [1, 0] fondo
-        INICIO:
-            POP BX
-            POP AX
-            MOV AX, BX
-            ADD BX,AX
-            CMP BX, NUMESFIB
-            JE SONIGUALES
-            JNE SIGOITERANDO
-            SIGOITERANDO:
-                cmp BX,NUMESFIB
-                jb NOESFIBONACCI    ;Si el segundo es menor
-                push AX
-                push BX
-                JMP INICIO
-        SONIGUALES:
-            MOV flagESFIBONACCI, "1"
+        mov dx,0
+        mov ax,NUMESFIB
+        mov bx,2
+        div bx
+        cmp DX,0d
+        jz par
+        jmp impar
+        par:
+            MOV flagESPAR, "1"
+            INC cantparesRES
             JMP SALIR
-        NOESFIBONACCI:
-            MOV flagESFIBONACCI, "0"
+        impar:
+            MOV flagIMPAR, "0"
+            INC cantimparesRES
             JMP SALIR
         SALIR:
         RET
@@ -1646,7 +1642,7 @@ INCLUDE ARCHIVOS.inc
     LUCASLUCAS_ PROC NEAR
         ;  se van sumando a pares, de manera que cada número es igual a la suma
         ;  de sus dos anteriores, de manera que: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55…
-        MOV AX, 0
+        MOV AX, 2
         MOV BX, 1
         push AX        ;! BX, AX
         push BX    ;* top [1, 0] fondo
@@ -1674,9 +1670,6 @@ INCLUDE ARCHIVOS.inc
         RET
 
     LUCASLUCAS_ ENDP
-
-
-
 
 
 
