@@ -116,8 +116,16 @@ INCLUDE ARCHIVOS.inc
         listValues          dB 2000 dup('$')
         CONTADORValues  DW 0 ;! resultados de ID
         ;*almacenar los VALORES PARA ESTADISTICOS
-        listestadistic          dw 2000 dup('$') ;! ESTADISTICOS SE BASA EN ESTO RESETEAR
+        listestadistic          dw ? ;! ESTADISTICOS SE BASA EN ESTO RESETEAR
+        DESORDENADA          DW ? ;! ESTADISTICOS SE BASA EN ESTO RESETEAR
+        TAMANODEARRAY          dw ? ;! ESTADISTICOS SE BASA EN ESTO RESETEAR
         INDEXlistestadistic     DW ?
+
+
+
+        TEMPBB DW ?
+        TEMPBB1 DW ?
+        TEMPBB2 DW ?
     ;* --------------------------  ESTADISTICOS -----------------------------
         NUMESFIB DW ?
         flagESPAR DW ?
@@ -199,14 +207,44 @@ INCLUDE ARCHIVOS.inc
         MOV DS, AX
         MOV ES, AX
         MOV INDEXlistestadistic,0 ;TODO: PARA RESET TAMBIEN
-                                ; misdatos
-                                ; esperaenter  ;TODO: activar despues
-                                ; paint  0, 0, 800, 600, BLACK ;*LIMPIA TODO MODO VIDEO:V
-                                ; menu
-                                ; esperaenter
+                                misdatos
+                                esperaenter  ;TODO: activar despues
+                                paint  0, 0, 800, 600, BLACK ;*LIMPIA TODO MODO VIDEO:V
+                                menu
+                                esperaenter
         limpiar
         readtext
-                                    ;;* PRUEBA MEDIA
+            ; MOV NUMTEMP[0],"9"
+            ; MOV NUMTEMP[1],"$"
+            ; intToString NUMTEMP, PARSEDNUM
+            ; MOV AX, PARSEDNUM
+            MOV listestadistic[0], 9
+            
+            MOV listestadistic[2], 1
+            
+            MOV listestadistic[4], 8
+            MOV listestadistic[6], 4
+            
+            MOV listestadistic[8], 2
+
+
+            BUBBLESORT  8
+            MOV AX,listestadistic[0]
+            printnum RESULTADOPRINT, AX
+            print RESULTADOPRINT
+            MOV AX,listestadistic[2]
+            printnum RESULTADOPRINT, AX
+            print RESULTADOPRINT
+            MOV AX,listestadistic[4]
+            printnum RESULTADOPRINT, AX
+            print RESULTADOPRINT
+            MOV AX,listestadistic[6]
+            printnum RESULTADOPRINT, AX
+            print RESULTADOPRINT
+            MOV AX,listestadistic[8]
+            printnum RESULTADOPRINT, AX
+            print RESULTADOPRINT
+                                    ; ;* PRUEBA MEDIA
                                     ; MOV NUMTEMP[0],"2"
                                     ; MOV NUMTEMP[1],"5"
                                     ; MOV NUMTEMP[2],"0"
@@ -1673,7 +1711,45 @@ INCLUDE ARCHIVOS.inc
 
 
 
+    BUBBLESORT_ PROC NEAR
+        MOV SI, -2
+        MOV DI, -2
+        ILOOP:       ;* for i in range(0,len(list1)-1):
+            INC SI
+            INC SI
+            JLOOP:  ;* for j in range(len(list1)-1)
+                INC DI
+                INC DI
+                CONDITION:          ;*if(list1[j]>list1[j+1]):
 
+                    MOV AX, listestadistic[DI]
+                    MOV BX, listestadistic[DI+2]
+                    CMP AX,BX
+                    JG MAYORQUE
+                    JMP JLOOP_
+                    MAYORQUE:
+                        MOV AX, listestadistic[DI]    ;*temp = list1[j]
+                        MOV TEMPBB, AX
+                        MOV AX, listestadistic[DI+2]
+                        MOV listestadistic[DI], AX   ;*list1[j] = list1[j+1]
+                        MOV AX, TEMPBB
+                        MOV listestadistic[DI+2], AX  ;*list1[j+1] = temp
+                        
+                        JMP JLOOP_
+        JLOOP_:
+            CMP DI, 8
+            JNE JLOOP
+            JE ILOOPS_
+        ILOOPS_:
+            MOV DI,0
+            cmp SI, 8
+            JNE ILOOP
+            JE SALIR
+
+
+        SALIR:
+        RET
+    BUBBLESORT_ ENDP
 
 
 

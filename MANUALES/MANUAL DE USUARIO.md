@@ -27,7 +27,7 @@
 ---
 
 <center> <h1>PRACTICA #3</h1> </center>
-<center> <h1>JUEGO BATTLESHIP</h1> </center>
+<center> <h1>CALCULADORA</h1> </center>
 
 
 
@@ -94,18 +94,18 @@ Este documento contiene toda la información sobre los recursos utilizados por e
 | Interfaz del programa | [Ir](#inter) |
 | Conclusiones | [Ir](#Conclu) |
 ## <a name="intro" ></a>INTRODUCCIÓN
-El presente manual de usuario tiene como finalidad describir la estructura y diseño del programa Laberinto que se realizo como parte de Practica 3, así como dar explicación hacia los usuarios de como pueden ejecutar y jugar en su casa. El sistema cuenta con implementación de varias librerías propias de Arduino Online como parte del conocimiento adquirido en los laboratorios de arquitectura de ensambladores y computadores 1, en base a ello tratarémos de explicar como ejecutar el juego para poder disfrutarlo.
+El presente manual de usuario tiene como finalidad describir la estructura y diseño del programa CALCULADORA BASICA que se realizo como parte de Practica 4, así como dar explicación hacia los usuarios de como pueden ejecutar y USAR la calculadora en su casa. El sistema cuenta con implementación de varias librerías propias de Arduino Online como parte del conocimiento adquirido en los laboratorios de arquitectura de ensambladores y computadores 1, en base a ello tratarémos de explicar como ejecutar la calculadora para poder disfrutarlo.
 
 
 ## <a name="inf"></a>Informacion del Sistema
-El juego de acorazado es el clásico juego de combate naval que reúne la competencia, la estrategia y la emoción! En la batalla cara a cara, los jugadores buscan la flota de barcos enemigos y los destruyen uno por uno.
+Una calculadora básica es un aparato electrónico que nos ayuda a realizar las tareas mas comunes en cuanto a cálculo se refiere, la calculadora básica ofrece las operaciones más habituales como suma, resta, multiplicación y división, además suelen incluir para calcular porcentajes y algunos botones de memoria para realizar operaciones con resultados anteriores.
 
-- Con prácticos casos de batalla portátiles y artesanías navales de aspecto realista, el juego de acorazado pone a los jugadores justo en medio de la acción.
+- La calculadora de fuentes de alimentación es una calculadora que nos ayudará a la hora de elegir una fuente de alimentación ideal para nuestro PC, en ella introducimos los componentes que tenemos, calcula el consumo que tienen estos componentes, y nos ofrece un resultado en vatios para que, como mínimo, deba tener nuestra fuente de alimentación. 
 
-- Juega cuando y donde quiera
-- Fregar las naves del oponente para la victoria
-- Rastrear barcos enemigos en la cuadrícula objetivo
-- Llame a un disparo y fuego
+- La notación polaca inversa, notación de postfijo, o notación posfija (en inglés, Reverse Polish Notation, o RPN), es un método algebraico alternativo de introducción de datos. Su nombre viene por analogía con la relacionada notación polaca, una notación de prefijo introducida en 1920 por el matemático polaco Jan Łukasiewicz en donde cada operador está antes de sus operandos. En la notación polaca inversa es al revés: primero están los operandos y después viene el operador que va a realizar los cálculos sobre ellos. Tanto la notación polaca como la notación polaca inversa no necesitan usar paréntesis para indicar el orden de las operaciones, mientras la aridad del operador sea fija.
+
+- Expresiones en notaciones infija, prefija y sufija — Solución de problemas con algoritmos y estructuras de datos.
+ - Las notaciones sirven de base para expresar sentencias bien definidas. El uso más extendido de las notaciones sirve para expresar operaciones aritméticas. Las expresiones aritméticas se pueden expresar de tres formas distintas: infija, prefija y postfija.
 ## <a name="ob"></a>Objetivos y alcances del sistema
 
 ### Objetivo General
@@ -177,25 +177,6 @@ En la interfaz utilizada podemos encontrar diferentes enlementos que nos ayudan 
 <p align="center">
   <a href="#"><img src="a5.png"/></a>
 </p>
-<p align="center">
-  <a href="#"><img src="a6.png"/></a>
-</p>
-<p align="center">
-  <a href="#"><img src="a7.png"/></a>
-</p>
-<p align="center">
-  <a href="#"><img src="a8.png"/></a>
-</p>
-
-
-REPORTES
-<p align="center">
-  <a href="#"><img src="a9.png"/></a>
-</p>
-<p align="center">
-  <a href="#"><img src="a10.png"/></a>
-</p>
-
 
 ## <a name="Conclu"></a>Conclusiones
 
@@ -204,3 +185,6 @@ REPORTES
 - •La importancia de este es que en el se pueden hacer cualquier tipo de programas que en otros lenguajes de alto nivel no, al igual que ocupan menos espacio en la memoria.
 
 - Este lenguaje es creado a base de instrucciones para intentar sustituir al lenguaje maquina por uno similar utilizado por el hombre.
+
+- ¿Qué es un operador infijo?
+La notación de infijo es la notación común de fórmulas aritméticas y lógicas, en la cual se escriben los operadores entre los operandos en que están actuando (ej. 2 + 2) usando un estilo de infijo.
